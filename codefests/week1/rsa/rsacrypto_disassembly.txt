@@ -1,0 +1,806 @@
+  0           RESUME                   0
+
+  1           LOAD_CONST               0 (0)
+              LOAD_CONST               1 (None)
+              IMPORT_NAME              0 (rsa)
+              STORE_NAME               0 (rsa)
+
+  2           LOAD_CONST               0 (0)
+              LOAD_CONST               1 (None)
+              IMPORT_NAME              1 (os)
+              STORE_NAME               1 (os)
+
+  4           LOAD_CONST               2 (<code object generate_keys at 0x000002E4B7CBB630, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\rsa\rsacrypto.py", line 4>)
+              MAKE_FUNCTION
+              STORE_NAME               2 (generate_keys)
+
+  8           LOAD_CONST               3 (<code object encrypt_file at 0x000002E4B7C3D8B0, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\rsa\rsacrypto.py", line 8>)
+              MAKE_FUNCTION
+              STORE_NAME               3 (encrypt_file)
+
+ 23           LOAD_CONST               4 (<code object decrypt_file at 0x000002E4B7EA0020, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\rsa\rsacrypto.py", line 23>)
+              MAKE_FUNCTION
+              STORE_NAME               4 (decrypt_file)
+
+ 41           LOAD_CONST               5 (<code object save_key at 0x000002E4B789FBB0, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\rsa\rsacrypto.py", line 41>)
+              MAKE_FUNCTION
+              STORE_NAME               5 (save_key)
+
+ 49           LOAD_CONST               6 (<code object load_key at 0x000002E4B7EA0360, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\rsa\rsacrypto.py", line 49>)
+              MAKE_FUNCTION
+              STORE_NAME               6 (load_key)
+
+ 67           LOAD_CONST               7 (<code object main at 0x000002E4B7E203D0, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\rsa\rsacrypto.py", line 67>)
+              MAKE_FUNCTION
+              STORE_NAME               7 (main)
+
+103           LOAD_NAME                8 (__name__)
+              LOAD_CONST               8 ('__main__')
+              COMPARE_OP              88 (bool(==))
+              POP_JUMP_IF_FALSE        8 (to L1)
+
+104           LOAD_NAME                7 (main)
+              PUSH_NULL
+              CALL                     0
+              POP_TOP
+              RETURN_CONST             1 (None)
+
+103   L1:     RETURN_CONST             1 (None)
+
+Disassembly of <code object generate_keys at 0x000002E4B7CBB630, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\rsa\rsacrypto.py", line 4>:
+  4           RESUME                   0
+
+  5           LOAD_GLOBAL              0 (rsa)
+              LOAD_ATTR                2 (newkeys)
+              PUSH_NULL
+              LOAD_CONST               1 (2048)
+              CALL                     1
+              UNPACK_SEQUENCE          2
+              STORE_FAST_STORE_FAST    1 (pubkey, privkey)
+
+  6           LOAD_FAST_LOAD_FAST      1 (pubkey, privkey)
+              BUILD_TUPLE              2
+              RETURN_VALUE
+
+Disassembly of <code object encrypt_file at 0x000002E4B7C3D8B0, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\rsa\rsacrypto.py", line 8>:
+   8            RESUME                   0
+
+   9            NOP
+
+  10    L1:     LOAD_GLOBAL              0 (os)
+                LOAD_ATTR                2 (path)
+                LOAD_ATTR                5 (abspath + NULL|self)
+                LOAD_FAST                0 (filename)
+                CALL                     1
+                STORE_FAST               0 (filename)
+
+  11            LOAD_GLOBAL              7 (print + NULL)
+                LOAD_CONST               1 ('Encrypting file: ')
+                LOAD_FAST                0 (filename)
+                FORMAT_SIMPLE
+                BUILD_STRING             2
+                CALL                     1
+                POP_TOP
+
+  12            LOAD_GLOBAL              9 (open + NULL)
+                LOAD_FAST                0 (filename)
+                LOAD_CONST               2 ('rb')
+                CALL                     2
+                BEFORE_WITH
+        L2:     STORE_FAST               2 (infile)
+
+  13            LOAD_FAST                2 (infile)
+                LOAD_ATTR               11 (read + NULL|self)
+                CALL                     0
+                STORE_FAST               3 (data)
+
+  12    L3:     LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                CALL                     2
+                POP_TOP
+
+  14    L4:     LOAD_GLOBAL             12 (rsa)
+                LOAD_ATTR               14 (encrypt)
+                PUSH_NULL
+                LOAD_FAST_CHECK          3 (data)
+                LOAD_FAST                1 (pubkey)
+                CALL                     2
+                STORE_FAST               4 (encrypted_data)
+
+  15            LOAD_GLOBAL              9 (open + NULL)
+                LOAD_FAST                0 (filename)
+                LOAD_CONST               3 ('.enc')
+                BINARY_OP                0 (+)
+                LOAD_CONST               4 ('wb')
+                CALL                     2
+                BEFORE_WITH
+        L5:     STORE_FAST               5 (outfile)
+
+  16            LOAD_FAST                5 (outfile)
+                LOAD_ATTR               17 (write + NULL|self)
+                LOAD_FAST                4 (encrypted_data)
+                CALL                     1
+                POP_TOP
+
+  15    L6:     LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                CALL                     2
+                POP_TOP
+
+  17    L7:     LOAD_GLOBAL              7 (print + NULL)
+                LOAD_CONST               5 ('File encrypted successfully.')
+                CALL                     1
+                POP_TOP
+        L8:     RETURN_CONST             0 (None)
+
+  12    L9:     PUSH_EXC_INFO
+                WITH_EXCEPT_START
+                TO_BOOL
+                POP_JUMP_IF_TRUE         1 (to L10)
+                RERAISE                  2
+       L10:     POP_TOP
+       L11:     POP_EXCEPT
+                POP_TOP
+                POP_TOP
+                JUMP_BACKWARD_NO_INTERRUPT 90 (to L4)
+
+  --   L12:     COPY                     3
+                POP_EXCEPT
+                RERAISE                  1
+
+  15   L13:     PUSH_EXC_INFO
+                WITH_EXCEPT_START
+                TO_BOOL
+                POP_JUMP_IF_TRUE         1 (to L14)
+                RERAISE                  2
+       L14:     POP_TOP
+       L15:     POP_EXCEPT
+                POP_TOP
+                POP_TOP
+                JUMP_BACKWARD_NO_INTERRUPT 43 (to L7)
+
+  --   L16:     COPY                     3
+                POP_EXCEPT
+                RERAISE                  1
+       L17:     PUSH_EXC_INFO
+
+  18            LOAD_GLOBAL             18 (FileNotFoundError)
+                CHECK_EXC_MATCH
+                POP_JUMP_IF_FALSE       14 (to L19)
+                POP_TOP
+
+  19            LOAD_GLOBAL              7 (print + NULL)
+                LOAD_CONST               6 ('File not found.')
+                CALL                     1
+                POP_TOP
+       L18:     POP_EXCEPT
+                RETURN_CONST             0 (None)
+
+  20   L19:     LOAD_GLOBAL             20 (Exception)
+                CHECK_EXC_MATCH
+                POP_JUMP_IF_FALSE       24 (to L23)
+                STORE_FAST               6 (e)
+
+  21   L20:     LOAD_GLOBAL              7 (print + NULL)
+                LOAD_CONST               7 ('An error occurred: ')
+                LOAD_FAST                6 (e)
+                FORMAT_SIMPLE
+                BUILD_STRING             2
+                CALL                     1
+                POP_TOP
+       L21:     POP_EXCEPT
+                LOAD_CONST               0 (None)
+                STORE_FAST               6 (e)
+                DELETE_FAST              6 (e)
+                RETURN_CONST             0 (None)
+
+  --   L22:     LOAD_CONST               0 (None)
+                STORE_FAST               6 (e)
+                DELETE_FAST              6 (e)
+                RERAISE                  1
+
+  20   L23:     RERAISE                  0
+
+  --   L24:     COPY                     3
+                POP_EXCEPT
+                RERAISE                  1
+ExceptionTable:
+  L1 to L2 -> L17 [0]
+  L2 to L3 -> L9 [1] lasti
+  L3 to L5 -> L17 [0]
+  L5 to L6 -> L13 [1] lasti
+  L6 to L8 -> L17 [0]
+  L9 to L11 -> L12 [3] lasti
+  L11 to L13 -> L17 [0]
+  L13 to L15 -> L16 [3] lasti
+  L15 to L17 -> L17 [0]
+  L17 to L18 -> L24 [1] lasti
+  L19 to L20 -> L24 [1] lasti
+  L20 to L21 -> L22 [1] lasti
+  L22 to L24 -> L24 [1] lasti
+
+Disassembly of <code object decrypt_file at 0x000002E4B7EA0020, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\rsa\rsacrypto.py", line 23>:
+  23            RESUME                   0
+
+  24            NOP
+
+  25    L1:     LOAD_GLOBAL              0 (os)
+                LOAD_ATTR                2 (path)
+                LOAD_ATTR                5 (abspath + NULL|self)
+                LOAD_FAST                0 (filename)
+                CALL                     1
+                STORE_FAST               0 (filename)
+
+  26            LOAD_GLOBAL              7 (print + NULL)
+                LOAD_CONST               1 ('Decrypting file: ')
+                LOAD_FAST                0 (filename)
+                FORMAT_SIMPLE
+                BUILD_STRING             2
+                CALL                     1
+                POP_TOP
+
+  27            LOAD_GLOBAL              9 (open + NULL)
+                LOAD_FAST                0 (filename)
+                LOAD_CONST               2 ('rb')
+                CALL                     2
+                BEFORE_WITH
+        L2:     STORE_FAST               2 (infile)
+
+  28            LOAD_FAST                2 (infile)
+                LOAD_ATTR               11 (read + NULL|self)
+                CALL                     0
+                STORE_FAST               3 (encrypted_data)
+
+  27    L3:     LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                CALL                     2
+                POP_TOP
+
+  29    L4:     LOAD_GLOBAL             12 (rsa)
+                LOAD_ATTR               14 (decrypt)
+                PUSH_NULL
+                LOAD_FAST_CHECK          3 (encrypted_data)
+                LOAD_FAST                1 (privkey)
+                CALL                     2
+                STORE_FAST               4 (decrypted_data)
+
+  30            LOAD_FAST                0 (filename)
+                LOAD_ATTR               17 (endswith + NULL|self)
+                LOAD_CONST               3 ('.enc')
+                CALL                     1
+                TO_BOOL
+                POP_JUMP_IF_FALSE        5 (to L5)
+                LOAD_FAST                0 (filename)
+                LOAD_CONST               0 (None)
+                LOAD_CONST               4 (-4)
+                BINARY_SLICE
+                JUMP_FORWARD             1 (to L6)
+        L5:     LOAD_FAST                0 (filename)
+        L6:     STORE_FAST               5 (base_filename)
+
+  31            LOAD_GLOBAL              9 (open + NULL)
+                LOAD_FAST                5 (base_filename)
+                LOAD_CONST               5 ('wb')
+                CALL                     2
+                BEFORE_WITH
+        L7:     STORE_FAST               6 (outfile)
+
+  32            LOAD_FAST                6 (outfile)
+                LOAD_ATTR               19 (write + NULL|self)
+                LOAD_FAST                4 (decrypted_data)
+                CALL                     1
+                POP_TOP
+
+  31    L8:     LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                CALL                     2
+                POP_TOP
+
+  33    L9:     LOAD_GLOBAL              7 (print + NULL)
+                LOAD_CONST               6 ('File decrypted successfully.')
+                CALL                     1
+                POP_TOP
+       L10:     RETURN_CONST             0 (None)
+
+  27   L11:     PUSH_EXC_INFO
+                WITH_EXCEPT_START
+                TO_BOOL
+                POP_JUMP_IF_TRUE         1 (to L12)
+                RERAISE                  2
+       L12:     POP_TOP
+       L13:     POP_EXCEPT
+                POP_TOP
+                POP_TOP
+                JUMP_BACKWARD_NO_INTERRUPT 116 (to L4)
+
+  --   L14:     COPY                     3
+                POP_EXCEPT
+                RERAISE                  1
+
+  31   L15:     PUSH_EXC_INFO
+                WITH_EXCEPT_START
+                TO_BOOL
+                POP_JUMP_IF_TRUE         1 (to L16)
+                RERAISE                  2
+       L16:     POP_TOP
+       L17:     POP_EXCEPT
+                POP_TOP
+                POP_TOP
+                JUMP_BACKWARD_NO_INTERRUPT 43 (to L9)
+
+  --   L18:     COPY                     3
+                POP_EXCEPT
+                RERAISE                  1
+       L19:     PUSH_EXC_INFO
+
+  34            LOAD_GLOBAL             20 (FileNotFoundError)
+                CHECK_EXC_MATCH
+                POP_JUMP_IF_FALSE       14 (to L21)
+                POP_TOP
+
+  35            LOAD_GLOBAL              7 (print + NULL)
+                LOAD_CONST               7 ('File not found.')
+                CALL                     1
+                POP_TOP
+       L20:     POP_EXCEPT
+                RETURN_CONST             0 (None)
+
+  36   L21:     LOAD_GLOBAL             12 (rsa)
+                LOAD_ATTR               22 (DecryptionError)
+                CHECK_EXC_MATCH
+                POP_JUMP_IF_FALSE       14 (to L23)
+                POP_TOP
+
+  37            LOAD_GLOBAL              7 (print + NULL)
+                LOAD_CONST               8 ('Decryption failed.  Incorrect key or file.')
+                CALL                     1
+                POP_TOP
+       L22:     POP_EXCEPT
+                RETURN_CONST             0 (None)
+
+  38   L23:     LOAD_GLOBAL             24 (Exception)
+                CHECK_EXC_MATCH
+                POP_JUMP_IF_FALSE       24 (to L27)
+                STORE_FAST               7 (e)
+
+  39   L24:     LOAD_GLOBAL              7 (print + NULL)
+                LOAD_CONST               9 ('An error occurred: ')
+                LOAD_FAST                7 (e)
+                FORMAT_SIMPLE
+                BUILD_STRING             2
+                CALL                     1
+                POP_TOP
+       L25:     POP_EXCEPT
+                LOAD_CONST               0 (None)
+                STORE_FAST               7 (e)
+                DELETE_FAST              7 (e)
+                RETURN_CONST             0 (None)
+
+  --   L26:     LOAD_CONST               0 (None)
+                STORE_FAST               7 (e)
+                DELETE_FAST              7 (e)
+                RERAISE                  1
+
+  38   L27:     RERAISE                  0
+
+  --   L28:     COPY                     3
+                POP_EXCEPT
+                RERAISE                  1
+ExceptionTable:
+  L1 to L2 -> L19 [0]
+  L2 to L3 -> L11 [1] lasti
+  L3 to L7 -> L19 [0]
+  L7 to L8 -> L15 [1] lasti
+  L8 to L10 -> L19 [0]
+  L11 to L13 -> L14 [3] lasti
+  L13 to L15 -> L19 [0]
+  L15 to L17 -> L18 [3] lasti
+  L17 to L19 -> L19 [0]
+  L19 to L20 -> L28 [1] lasti
+  L21 to L22 -> L28 [1] lasti
+  L23 to L24 -> L28 [1] lasti
+  L24 to L25 -> L26 [1] lasti
+  L26 to L28 -> L28 [1] lasti
+
+Disassembly of <code object save_key at 0x000002E4B789FBB0, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\rsa\rsacrypto.py", line 41>:
+  41            RESUME                   0
+
+  42            NOP
+
+  43    L1:     LOAD_GLOBAL              1 (open + NULL)
+                LOAD_FAST                1 (filename)
+                LOAD_CONST               1 ('wb')
+                CALL                     2
+                BEFORE_WITH
+        L2:     STORE_FAST               2 (outfile)
+
+  44            LOAD_FAST                2 (outfile)
+                LOAD_ATTR                3 (write + NULL|self)
+                LOAD_FAST                0 (key)
+                LOAD_ATTR                5 (save_pkcs1 + NULL|self)
+                LOAD_CONST               2 ('PEM')
+                CALL                     1
+                CALL                     1
+                POP_TOP
+
+  43    L3:     LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                CALL                     2
+                POP_TOP
+
+  45    L4:     LOAD_GLOBAL              7 (print + NULL)
+                LOAD_CONST               3 ('Key saved to ')
+                LOAD_FAST                1 (filename)
+                FORMAT_SIMPLE
+                BUILD_STRING             2
+                CALL                     1
+                POP_TOP
+        L5:     RETURN_CONST             0 (None)
+
+  43    L6:     PUSH_EXC_INFO
+                WITH_EXCEPT_START
+                TO_BOOL
+                POP_JUMP_IF_TRUE         1 (to L7)
+                RERAISE                  2
+        L7:     POP_TOP
+        L8:     POP_EXCEPT
+                POP_TOP
+                POP_TOP
+                JUMP_BACKWARD_NO_INTERRUPT 29 (to L4)
+
+  --    L9:     COPY                     3
+                POP_EXCEPT
+                RERAISE                  1
+       L10:     PUSH_EXC_INFO
+
+  46            LOAD_GLOBAL              8 (Exception)
+                CHECK_EXC_MATCH
+                POP_JUMP_IF_FALSE       24 (to L14)
+                STORE_FAST               3 (e)
+
+  47   L11:     LOAD_GLOBAL              7 (print + NULL)
+                LOAD_CONST               4 ('An error occurred: ')
+                LOAD_FAST                3 (e)
+                FORMAT_SIMPLE
+                BUILD_STRING             2
+                CALL                     1
+                POP_TOP
+       L12:     POP_EXCEPT
+                LOAD_CONST               0 (None)
+                STORE_FAST               3 (e)
+                DELETE_FAST              3 (e)
+                RETURN_CONST             0 (None)
+
+  --   L13:     LOAD_CONST               0 (None)
+                STORE_FAST               3 (e)
+                DELETE_FAST              3 (e)
+                RERAISE                  1
+
+  46   L14:     RERAISE                  0
+
+  --   L15:     COPY                     3
+                POP_EXCEPT
+                RERAISE                  1
+ExceptionTable:
+  L1 to L2 -> L10 [0]
+  L2 to L3 -> L6 [1] lasti
+  L3 to L5 -> L10 [0]
+  L6 to L8 -> L9 [3] lasti
+  L8 to L10 -> L10 [0]
+  L10 to L11 -> L15 [1] lasti
+  L11 to L12 -> L13 [1] lasti
+  L13 to L15 -> L15 [1] lasti
+
+Disassembly of <code object load_key at 0x000002E4B7EA0360, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\rsa\rsacrypto.py", line 49>:
+  49            RESUME                   0
+
+  50            NOP
+
+  51    L1:     LOAD_GLOBAL              0 (os)
+                LOAD_ATTR                2 (path)
+                LOAD_ATTR                5 (abspath + NULL|self)
+                LOAD_FAST                0 (filename)
+                CALL                     1
+                STORE_FAST               0 (filename)
+
+  52            LOAD_GLOBAL              7 (print + NULL)
+                LOAD_CONST               1 ('Loading key from: ')
+                LOAD_FAST                0 (filename)
+                FORMAT_SIMPLE
+                BUILD_STRING             2
+                CALL                     1
+                POP_TOP
+
+  53            LOAD_GLOBAL              9 (open + NULL)
+                LOAD_FAST                0 (filename)
+                LOAD_CONST               2 ('rb')
+                CALL                     2
+                BEFORE_WITH
+        L2:     STORE_FAST               2 (infile)
+
+  54            LOAD_FAST                2 (infile)
+                LOAD_ATTR               11 (read + NULL|self)
+                CALL                     0
+                STORE_FAST               3 (keydata)
+
+  53    L3:     LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                CALL                     2
+                POP_TOP
+
+  55    L4:     LOAD_FAST                1 (key_type)
+                LOAD_CONST               3 ('private')
+                COMPARE_OP              88 (bool(==))
+                POP_JUMP_IF_FALSE       33 (to L6)
+
+  56            LOAD_GLOBAL             12 (rsa)
+                LOAD_ATTR               14 (PrivateKey)
+                LOAD_ATTR               17 (load_pkcs1 + NULL|self)
+                LOAD_FAST_CHECK          3 (keydata)
+                CALL                     1
+                STORE_FAST               4 (key)
+
+  59            LOAD_FAST                4 (key)
+        L5:     RETURN_VALUE
+
+  57    L6:     LOAD_FAST                1 (key_type)
+                LOAD_CONST               4 ('public')
+                COMPARE_OP              88 (bool(==))
+                POP_JUMP_IF_FALSE       31 (to L7)
+
+  58            LOAD_GLOBAL             12 (rsa)
+                LOAD_ATTR               18 (PublicKey)
+                LOAD_ATTR               17 (load_pkcs1 + NULL|self)
+                LOAD_FAST_CHECK          3 (keydata)
+                CALL                     1
+                STORE_FAST               4 (key)
+
+  59    L7:     LOAD_FAST_CHECK          4 (key)
+        L8:     RETURN_VALUE
+
+  53    L9:     PUSH_EXC_INFO
+                WITH_EXCEPT_START
+                TO_BOOL
+                POP_JUMP_IF_TRUE         1 (to L10)
+                RERAISE                  2
+       L10:     POP_TOP
+       L11:     POP_EXCEPT
+                POP_TOP
+                POP_TOP
+                JUMP_BACKWARD_NO_INTERRUPT 92 (to L4)
+
+  --   L12:     COPY                     3
+                POP_EXCEPT
+                RERAISE                  1
+       L13:     PUSH_EXC_INFO
+
+  60            LOAD_GLOBAL             20 (FileNotFoundError)
+                CHECK_EXC_MATCH
+                POP_JUMP_IF_FALSE       14 (to L15)
+                POP_TOP
+
+  61            LOAD_GLOBAL              7 (print + NULL)
+                LOAD_CONST               5 ('File not found.')
+                CALL                     1
+                POP_TOP
+
+  62   L14:     POP_EXCEPT
+                RETURN_CONST             0 (None)
+
+  63   L15:     LOAD_GLOBAL             22 (Exception)
+                CHECK_EXC_MATCH
+                POP_JUMP_IF_FALSE       24 (to L19)
+                STORE_FAST               5 (e)
+
+  64   L16:     LOAD_GLOBAL              7 (print + NULL)
+                LOAD_CONST               6 ('An error occurred: ')
+                LOAD_FAST                5 (e)
+                FORMAT_SIMPLE
+                BUILD_STRING             2
+                CALL                     1
+                POP_TOP
+
+  65   L17:     POP_EXCEPT
+                LOAD_CONST               0 (None)
+                STORE_FAST               5 (e)
+                DELETE_FAST              5 (e)
+                RETURN_CONST             0 (None)
+
+  --   L18:     LOAD_CONST               0 (None)
+                STORE_FAST               5 (e)
+                DELETE_FAST              5 (e)
+                RERAISE                  1
+
+  63   L19:     RERAISE                  0
+
+  --   L20:     COPY                     3
+                POP_EXCEPT
+                RERAISE                  1
+ExceptionTable:
+  L1 to L2 -> L13 [0]
+  L2 to L3 -> L9 [1] lasti
+  L3 to L5 -> L13 [0]
+  L6 to L8 -> L13 [0]
+  L9 to L11 -> L12 [3] lasti
+  L11 to L13 -> L13 [0]
+  L13 to L14 -> L20 [1] lasti
+  L15 to L16 -> L20 [1] lasti
+  L16 to L17 -> L18 [1] lasti
+  L18 to L20 -> L20 [1] lasti
+
+Disassembly of <code object main at 0x000002E4B7E203D0, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\rsa\rsacrypto.py", line 67>:
+  67           RESUME                   0
+
+  68           NOP
+
+  69   L1:     LOAD_GLOBAL              1 (print + NULL)
+               LOAD_CONST               1 ('\nRSA Tool Menu:')
+               CALL                     1
+               POP_TOP
+
+  70           LOAD_GLOBAL              1 (print + NULL)
+               LOAD_CONST               2 ('1. Generate Public and Private Keys')
+               CALL                     1
+               POP_TOP
+
+  71           LOAD_GLOBAL              1 (print + NULL)
+               LOAD_CONST               3 ('2. Encrypt File')
+               CALL                     1
+               POP_TOP
+
+  72           LOAD_GLOBAL              1 (print + NULL)
+               LOAD_CONST               4 ('3. Decrypt File')
+               CALL                     1
+               POP_TOP
+
+  73           LOAD_GLOBAL              1 (print + NULL)
+               LOAD_CONST               5 ('4. Exit')
+               CALL                     1
+               POP_TOP
+
+  75           LOAD_GLOBAL              3 (input + NULL)
+               LOAD_CONST               6 ('Enter your choice (1-4): ')
+               CALL                     1
+               STORE_FAST               0 (choice)
+
+  77           LOAD_FAST                0 (choice)
+               LOAD_CONST               7 ('1')
+               COMPARE_OP              88 (bool(==))
+               POP_JUMP_IF_FALSE       38 (to L2)
+
+  78           LOAD_GLOBAL              5 (generate_keys + NULL)
+               CALL                     0
+               UNPACK_SEQUENCE          2
+               STORE_FAST_STORE_FAST   18 (pubkey, privkey)
+
+  79           LOAD_GLOBAL              7 (save_key + NULL)
+               LOAD_FAST                1 (pubkey)
+               LOAD_CONST               8 ('public.pem')
+               CALL                     2
+               POP_TOP
+
+  80           LOAD_GLOBAL              7 (save_key + NULL)
+               LOAD_FAST                2 (privkey)
+               LOAD_CONST               9 ('private.pem')
+               CALL                     2
+               POP_TOP
+               EXTENDED_ARG             1
+               JUMP_FORWARD           271 (to L8)
+
+  81   L2:     LOAD_FAST                0 (choice)
+               LOAD_CONST              10 ('2')
+               COMPARE_OP              88 (bool(==))
+               POP_JUMP_IF_FALSE      115 (to L4)
+
+  82           LOAD_GLOBAL              3 (input + NULL)
+               LOAD_CONST              11 ('Enter the filename to encrypt: ')
+               CALL                     1
+               STORE_FAST               3 (filename)
+
+  83           LOAD_GLOBAL              8 (os)
+               LOAD_ATTR               10 (path)
+               LOAD_ATTR               13 (abspath + NULL|self)
+               LOAD_FAST                3 (filename)
+               CALL                     1
+               STORE_FAST               3 (filename)
+
+  84           LOAD_GLOBAL              3 (input + NULL)
+               LOAD_CONST              12 ('Enter the public key filename: ')
+               CALL                     1
+               STORE_FAST               4 (pubkey_file)
+
+  85           LOAD_GLOBAL              8 (os)
+               LOAD_ATTR               10 (path)
+               LOAD_ATTR               13 (abspath + NULL|self)
+               LOAD_FAST                4 (pubkey_file)
+               CALL                     1
+               STORE_FAST               4 (pubkey_file)
+
+  86           LOAD_GLOBAL             15 (load_key + NULL)
+               LOAD_FAST                4 (pubkey_file)
+               LOAD_CONST              13 ('public')
+               CALL                     2
+               STORE_FAST               1 (pubkey)
+
+  87           LOAD_FAST                1 (pubkey)
+               TO_BOOL
+               POP_JUMP_IF_FALSE       11 (to L3)
+
+  88           LOAD_GLOBAL             17 (encrypt_file + NULL)
+               LOAD_FAST_LOAD_FAST     49 (filename, pubkey)
+               CALL                     2
+               POP_TOP
+
+  --   L3:     JUMP_FORWARD           150 (to L8)
+
+  89   L4:     LOAD_FAST                0 (choice)
+               LOAD_CONST              14 ('3')
+               COMPARE_OP              88 (bool(==))
+               POP_JUMP_IF_FALSE      115 (to L6)
+
+  90           LOAD_GLOBAL              3 (input + NULL)
+               LOAD_CONST              15 ('Enter the filename to decrypt: ')
+               CALL                     1
+               STORE_FAST               3 (filename)
+
+  91           LOAD_GLOBAL              8 (os)
+               LOAD_ATTR               10 (path)
+               LOAD_ATTR               13 (abspath + NULL|self)
+               LOAD_FAST                3 (filename)
+               CALL                     1
+               STORE_FAST               3 (filename)
+
+  92           LOAD_GLOBAL              3 (input + NULL)
+               LOAD_CONST              16 ('Enter the private key filename: ')
+               CALL                     1
+               STORE_FAST               5 (privkey_file)
+
+  93           LOAD_GLOBAL              8 (os)
+               LOAD_ATTR               10 (path)
+               LOAD_ATTR               13 (abspath + NULL|self)
+               LOAD_FAST                5 (privkey_file)
+               CALL                     1
+               STORE_FAST               5 (privkey_file)
+
+  94           LOAD_GLOBAL             15 (load_key + NULL)
+               LOAD_FAST                5 (privkey_file)
+               LOAD_CONST              17 ('private')
+               CALL                     2
+               STORE_FAST               2 (privkey)
+
+  95           LOAD_FAST                2 (privkey)
+               TO_BOOL
+               POP_JUMP_IF_FALSE       11 (to L5)
+
+  96           LOAD_GLOBAL             19 (decrypt_file + NULL)
+               LOAD_FAST_LOAD_FAST     50 (filename, privkey)
+               CALL                     2
+               POP_TOP
+
+  --   L5:     JUMP_FORWARD            29 (to L8)
+
+  97   L6:     LOAD_FAST                0 (choice)
+               LOAD_CONST              18 ('4')
+               COMPARE_OP              88 (bool(==))
+               POP_JUMP_IF_FALSE       12 (to L7)
+
+  98           LOAD_GLOBAL              1 (print + NULL)
+               LOAD_CONST              19 ('Exiting...')
+               CALL                     1
+               POP_TOP
+
+  99           RETURN_CONST             0 (None)
+
+ 101   L7:     LOAD_GLOBAL              1 (print + NULL)
+               LOAD_CONST              20 ('Invalid choice. Please enter a number between 1 and 4.')
+               CALL                     1
+               POP_TOP
+
+  68   L8:     EXTENDED_ARG             1
+               JUMP_BACKWARD          384 (to L1)
