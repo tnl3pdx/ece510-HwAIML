@@ -4,4 +4,5 @@ The repository contains challenge solutions for ECE 510 - Hardware In AI and ML.
 
 
 Log Book Link: [Google Drive](https://drive.google.com/drive/folders/14qTbDQHp6gnZEJzkRY6MXAn2CLWChqG-?usp=sharing)
+
 (Once the term is done, the files will be exported and saved onto this repo.)
