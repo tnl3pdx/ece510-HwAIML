@@ -5,102 +5,158 @@
               IMPORT_NAME              0 (os)
               STORE_NAME               0 (os)
 
-  3           LOAD_CONST               2 (<code object quicksort at 0x00000200B31A60A0, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\quicksort\quicksort.py", line 3>)
-              MAKE_FUNCTION
-              STORE_NAME               1 (quicksort)
+  2           LOAD_CONST               0 (0)
+              LOAD_CONST               1 (None)
+              IMPORT_NAME              1 (sys)
+              STORE_NAME               1 (sys)
 
- 51           LOAD_NAME                2 (__name__)
+  4           LOAD_CONST               2 (<code object quicksort at 0x000001C85A7E5780, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\quicksort\quicksort.py", line 4>)
+              MAKE_FUNCTION
+              STORE_NAME               2 (quicksort)
+
+ 52           LOAD_NAME                3 (__name__)
               LOAD_CONST               3 ('__main__')
               COMPARE_OP              88 (bool(==))
-              POP_JUMP_IF_FALSE      146 (to L2)
-
- 52           LOAD_NAME                0 (os)
-              LOAD_ATTR                6 (path)
-              LOAD_ATTR                9 (dirname + NULL|self)
-              LOAD_NAME                0 (os)
-              LOAD_ATTR                6 (path)
-              LOAD_ATTR               11 (abspath + NULL|self)
-              LOAD_NAME                6 (__file__)
-              CALL                     1
-              CALL                     1
-              STORE_NAME               7 (script_dir)
+              EXTENDED_ARG             1
+              POP_JUMP_IF_FALSE      256 (to L5)
 
  53           LOAD_NAME                0 (os)
-              LOAD_ATTR               16 (chdir)
+              LOAD_ATTR                8 (path)
+              LOAD_ATTR               11 (dirname + NULL|self)
+              LOAD_NAME                0 (os)
+              LOAD_ATTR                8 (path)
+              LOAD_ATTR               13 (abspath + NULL|self)
+              LOAD_NAME                7 (__file__)
+              CALL                     1
+              CALL                     1
+              STORE_NAME               8 (script_dir)
+
+ 54           LOAD_NAME                0 (os)
+              LOAD_ATTR               18 (chdir)
               PUSH_NULL
-              LOAD_NAME                7 (script_dir)
+              LOAD_NAME                8 (script_dir)
               CALL                     1
               POP_TOP
 
- 55           LOAD_NAME                9 (input)
+ 56           LOAD_NAME               10 (len)
               PUSH_NULL
-              LOAD_CONST               4 ('Enter the input filename: ')
+              LOAD_NAME                1 (sys)
+              LOAD_ATTR               22 (argv)
               CALL                     1
-              STORE_NAME              10 (input_file)
+              LOAD_CONST               4 (1)
+              COMPARE_OP              88 (bool(==))
+              POP_JUMP_IF_FALSE       31 (to L1)
 
- 56           LOAD_NAME                0 (os)
-              LOAD_ATTR                6 (path)
-              LOAD_ATTR               23 (join + NULL|self)
-              LOAD_NAME                7 (script_dir)
-              LOAD_NAME               10 (input_file)
+ 57           LOAD_CONST               5 ('random_numbers.txt')
+              STORE_NAME              12 (input_file)
+
+ 58           LOAD_NAME                0 (os)
+              LOAD_ATTR                8 (path)
+              LOAD_ATTR               27 (join + NULL|self)
+              LOAD_NAME                8 (script_dir)
+              LOAD_NAME               12 (input_file)
               CALL                     2
-              STORE_NAME              12 (input_path)
+              STORE_NAME              14 (input_path)
+              JUMP_FORWARD            93 (to L3)
 
- 58           LOAD_NAME               13 (print)
+ 59   L1:     LOAD_NAME               10 (len)
               PUSH_NULL
-              LOAD_CONST               5 ('Script directory: ')
-              LOAD_NAME                7 (script_dir)
+              LOAD_NAME                1 (sys)
+              LOAD_ATTR               22 (argv)
+              CALL                     1
+              LOAD_CONST               6 (2)
+              COMPARE_OP              88 (bool(==))
+              POP_JUMP_IF_FALSE       56 (to L2)
+              LOAD_NAME                1 (sys)
+              LOAD_ATTR               22 (argv)
+              LOAD_CONST               4 (1)
+              BINARY_SUBSCR
+              LOAD_CONST               7 ('-m')
+              COMPARE_OP              88 (bool(==))
+              POP_JUMP_IF_FALSE       37 (to L2)
+
+ 60           LOAD_NAME               15 (input)
+              PUSH_NULL
+              LOAD_CONST               8 ('Enter the input filename: ')
+              CALL                     1
+              STORE_NAME              12 (input_file)
+
+ 61           LOAD_NAME                0 (os)
+              LOAD_ATTR                8 (path)
+              LOAD_ATTR               27 (join + NULL|self)
+              LOAD_NAME                8 (script_dir)
+              LOAD_NAME               12 (input_file)
+              CALL                     2
+              STORE_NAME              14 (input_path)
+              JUMP_FORWARD            15 (to L3)
+
+ 63   L2:     LOAD_NAME               16 (print)
+              PUSH_NULL
+              LOAD_CONST               9 ('Usage: python quicksort.py [-m]')
+              CALL                     1
+              POP_TOP
+
+ 64           LOAD_NAME               17 (exit)
+              PUSH_NULL
+              CALL                     0
+              POP_TOP
+
+ 66   L3:     LOAD_NAME               16 (print)
+              PUSH_NULL
+              LOAD_CONST              10 ('Script directory: ')
+              LOAD_NAME                8 (script_dir)
               FORMAT_SIMPLE
               BUILD_STRING             2
               CALL                     1
               POP_TOP
 
- 59           LOAD_NAME               13 (print)
+ 67           LOAD_NAME               16 (print)
               PUSH_NULL
-              LOAD_CONST               6 ('Combined input path: ')
-              LOAD_NAME               12 (input_path)
+              LOAD_CONST              11 ('Combined input path: ')
+              LOAD_NAME               14 (input_path)
               FORMAT_SIMPLE
               BUILD_STRING             2
               CALL                     1
               POP_TOP
 
- 61           LOAD_NAME                1 (quicksort)
+ 69           LOAD_NAME                2 (quicksort)
               PUSH_NULL
-              LOAD_NAME               12 (input_path)
+              LOAD_NAME               14 (input_path)
               CALL                     1
-              POP_JUMP_IF_NOT_NONE     8 (to L1)
+              POP_JUMP_IF_NOT_NONE     8 (to L4)
 
- 62           LOAD_NAME               14 (exit)
+ 70           LOAD_NAME               17 (exit)
               PUSH_NULL
               CALL                     0
               POP_TOP
               RETURN_CONST             1 (None)
 
- 61   L1:     RETURN_CONST             1 (None)
+ 69   L4:     RETURN_CONST             1 (None)
 
- 51   L2:     RETURN_CONST             1 (None)
+ 52   L5:     RETURN_CONST             1 (None)
 
-Disassembly of <code object quicksort at 0x00000200B31A60A0, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\quicksort\quicksort.py", line 3>:
+Disassembly of <code object quicksort at 0x000001C85A7E5780, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\quicksort\quicksort.py", line 4>:
   --            MAKE_CELL                8 (partition)
                 MAKE_CELL                9 (quickSortHelper)
 
-   3            RESUME                   0
+   4            RESUME                   0
 
-  10            NOP
+  11            NOP
 
-  11    L1:     LOAD_GLOBAL              1 (open + NULL)
+  12    L1:     LOAD_GLOBAL              1 (open + NULL)
                 LOAD_FAST                0 (filename)
                 LOAD_CONST               1 ('r')
                 CALL                     2
                 BEFORE_WITH
         L2:     STORE_FAST               1 (f)
 
-  12            LOAD_FAST                1 (f)
+  13            LOAD_FAST                1 (f)
                 GET_ITER
                 LOAD_FAST_AND_CLEAR      2 (line)
                 SWAP                     2
         L3:     BUILD_LIST               0
                 SWAP                     2
+                GET_ITER
         L4:     FOR_ITER                28 (to L5)
                 STORE_FAST               2 (line)
                 LOAD_GLOBAL              3 (int + NULL)
@@ -115,25 +171,25 @@ Disassembly of <code object quicksort at 0x00000200B31A60A0, file "C:\Users\true
         L6:     STORE_FAST               3 (numbers)
                 STORE_FAST               2 (line)
 
-  11    L7:     LOAD_CONST               2 (None)
+  12    L7:     LOAD_CONST               2 (None)
                 LOAD_CONST               2 (None)
                 LOAD_CONST               2 (None)
                 CALL                     2
                 POP_TOP
 
-  20    L8:     LOAD_CONST               6 (<code object partition at 0x00000200B31208D0, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\quicksort\quicksort.py", line 20>)
+  21    L8:     LOAD_CONST               6 (<code object partition at 0x000001C85A738A40, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\quicksort\quicksort.py", line 21>)
                 MAKE_FUNCTION
                 STORE_DEREF              8 (partition)
 
-  32            LOAD_FAST                8 (partition)
+  33            LOAD_FAST                8 (partition)
                 LOAD_FAST                9 (quickSortHelper)
                 BUILD_TUPLE              2
-                LOAD_CONST               7 (<code object quickSortHelper at 0x00000200B30EFAB0, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\quicksort\quicksort.py", line 32>)
+                LOAD_CONST               7 (<code object quickSortHelper at 0x000001C85A788270, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\quicksort\quicksort.py", line 33>)
                 MAKE_FUNCTION
                 SET_FUNCTION_ATTRIBUTE   8 (closure)
                 STORE_DEREF              9 (quickSortHelper)
 
-  39            LOAD_DEREF               9 (quickSortHelper)
+  40            LOAD_DEREF               9 (quickSortHelper)
                 PUSH_NULL
                 LOAD_FAST_CHECK          3 (numbers)
                 LOAD_CONST               8 (0)
@@ -145,14 +201,14 @@ Disassembly of <code object quicksort at 0x00000200B31A60A0, file "C:\Users\true
                 CALL                     3
                 POP_TOP
 
-  41            LOAD_GLOBAL             14 (os)
+  42            LOAD_GLOBAL             14 (os)
                 LOAD_ATTR               16 (path)
                 LOAD_ATTR               19 (basename + NULL|self)
                 LOAD_FAST                0 (filename)
                 CALL                     1
                 STORE_FAST               4 (base_filename)
 
-  42            LOAD_GLOBAL             14 (os)
+  43            LOAD_GLOBAL             14 (os)
                 LOAD_ATTR               16 (path)
                 LOAD_ATTR               21 (join + NULL|self)
                 LOAD_GLOBAL             14 (os)
@@ -166,21 +222,21 @@ Disassembly of <code object quicksort at 0x00000200B31A60A0, file "C:\Users\true
                 CALL                     2
                 STORE_FAST               5 (output_filename)
 
-  43            NOP
+  44            NOP
 
-  44    L9:     LOAD_GLOBAL              1 (open + NULL)
+  45    L9:     LOAD_GLOBAL              1 (open + NULL)
                 LOAD_FAST                5 (output_filename)
                 LOAD_CONST              11 ('w')
                 CALL                     2
                 BEFORE_WITH
        L10:     STORE_FAST               1 (f)
 
-  45            LOAD_FAST                3 (numbers)
+  46            LOAD_FAST                3 (numbers)
                 GET_ITER
        L11:     FOR_ITER                32 (to L12)
                 STORE_FAST               6 (number)
 
-  46            LOAD_FAST                1 (f)
+  47            LOAD_FAST                1 (f)
                 LOAD_ATTR               25 (write + NULL|self)
                 LOAD_GLOBAL             27 (str + NULL)
                 LOAD_FAST                6 (number)
@@ -191,16 +247,16 @@ Disassembly of <code object quicksort at 0x00000200B31A60A0, file "C:\Users\true
                 POP_TOP
                 JUMP_BACKWARD           34 (to L11)
 
-  45   L12:     END_FOR
+  46   L12:     END_FOR
                 POP_TOP
 
-  44   L13:     LOAD_CONST               2 (None)
+  45   L13:     LOAD_CONST               2 (None)
                 LOAD_CONST               2 (None)
                 LOAD_CONST               2 (None)
                 CALL                     2
                 POP_TOP
 
-  47   L14:     LOAD_GLOBAL              9 (print + NULL)
+  48   L14:     LOAD_GLOBAL              9 (print + NULL)
                 LOAD_CONST              13 ("Sorted data written to '")
                 LOAD_FAST                5 (output_filename)
                 FORMAT_SIMPLE
@@ -213,11 +269,11 @@ Disassembly of <code object quicksort at 0x00000200B31A60A0, file "C:\Users\true
   --   L16:     SWAP                     2
                 POP_TOP
 
-  12            SWAP                     2
+  13            SWAP                     2
                 STORE_FAST               2 (line)
                 RERAISE                  0
 
-  11   L17:     PUSH_EXC_INFO
+  12   L17:     PUSH_EXC_INFO
                 WITH_EXCEPT_START
                 TO_BOOL
                 POP_JUMP_IF_TRUE         1 (to L18)
@@ -233,12 +289,12 @@ Disassembly of <code object quicksort at 0x00000200B31A60A0, file "C:\Users\true
                 RERAISE                  1
        L22:     PUSH_EXC_INFO
 
-  13            LOAD_GLOBAL              6 (FileNotFoundError)
+  14            LOAD_GLOBAL              6 (FileNotFoundError)
                 CHECK_EXC_MATCH
                 POP_JUMP_IF_FALSE       18 (to L24)
                 POP_TOP
 
-  14            LOAD_GLOBAL              9 (print + NULL)
+  15            LOAD_GLOBAL              9 (print + NULL)
                 LOAD_CONST               3 ("Error: File '")
                 LOAD_FAST                0 (filename)
                 FORMAT_SIMPLE
@@ -247,15 +303,15 @@ Disassembly of <code object quicksort at 0x00000200B31A60A0, file "C:\Users\true
                 CALL                     1
                 POP_TOP
 
-  15   L23:     POP_EXCEPT
+  16   L23:     POP_EXCEPT
                 RETURN_CONST             2 (None)
 
-  16   L24:     LOAD_GLOBAL             10 (ValueError)
+  17   L24:     LOAD_GLOBAL             10 (ValueError)
                 CHECK_EXC_MATCH
                 POP_JUMP_IF_FALSE       18 (to L26)
                 POP_TOP
 
-  17            LOAD_GLOBAL              9 (print + NULL)
+  18            LOAD_GLOBAL              9 (print + NULL)
                 LOAD_CONST               3 ("Error: File '")
                 LOAD_FAST                0 (filename)
                 FORMAT_SIMPLE
@@ -264,16 +320,16 @@ Disassembly of <code object quicksort at 0x00000200B31A60A0, file "C:\Users\true
                 CALL                     1
                 POP_TOP
 
-  18   L25:     POP_EXCEPT
+  19   L25:     POP_EXCEPT
                 RETURN_CONST             2 (None)
 
-  16   L26:     RERAISE                  0
+  17   L26:     RERAISE                  0
 
   --   L27:     COPY                     3
                 POP_EXCEPT
                 RERAISE                  1
 
-  44   L28:     PUSH_EXC_INFO
+  45   L28:     PUSH_EXC_INFO
                 WITH_EXCEPT_START
                 TO_BOOL
                 POP_JUMP_IF_TRUE         1 (to L29)
@@ -289,12 +345,12 @@ Disassembly of <code object quicksort at 0x00000200B31A60A0, file "C:\Users\true
                 RERAISE                  1
        L32:     PUSH_EXC_INFO
 
-  48            LOAD_GLOBAL             28 (Exception)
+  49            LOAD_GLOBAL             28 (Exception)
                 CHECK_EXC_MATCH
                 POP_JUMP_IF_FALSE       24 (to L36)
                 STORE_FAST               7 (e)
 
-  49   L33:     LOAD_GLOBAL              9 (print + NULL)
+  50   L33:     LOAD_GLOBAL              9 (print + NULL)
                 LOAD_CONST              15 ('Error writing to file: ')
                 LOAD_FAST                7 (e)
                 FORMAT_SIMPLE
@@ -312,7 +368,7 @@ Disassembly of <code object quicksort at 0x00000200B31A60A0, file "C:\Users\true
                 DELETE_FAST              7 (e)
                 RERAISE                  1
 
-  48   L36:     RERAISE                  0
+  49   L36:     RERAISE                  0
 
   --   L37:     COPY                     3
                 POP_EXCEPT
@@ -339,38 +395,38 @@ ExceptionTable:
   L33 to L34 -> L35 [1] lasti
   L35 to L37 -> L37 [1] lasti
 
-Disassembly of <code object partition at 0x00000200B31208D0, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\quicksort\quicksort.py", line 20>:
- 20           RESUME                   0
+Disassembly of <code object partition at 0x000001C85A738A40, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\quicksort\quicksort.py", line 21>:
+ 21           RESUME                   0
 
- 21           LOAD_FAST                1 (low)
+ 22           LOAD_FAST                1 (low)
               LOAD_CONST               1 (1)
               BINARY_OP               10 (-)
               STORE_FAST               3 (i)
 
- 22           LOAD_FAST_LOAD_FAST      2 (arr, high)
+ 23           LOAD_FAST_LOAD_FAST      2 (arr, high)
               BINARY_SUBSCR
               STORE_FAST               4 (pivot)
 
- 24           LOAD_GLOBAL              1 (range + NULL)
+ 25           LOAD_GLOBAL              1 (range + NULL)
               LOAD_FAST_LOAD_FAST     18 (low, high)
               CALL                     2
               GET_ITER
       L1:     FOR_ITER                31 (to L3)
               STORE_FAST               5 (j)
 
- 25           LOAD_FAST_LOAD_FAST      5 (arr, j)
+ 26           LOAD_FAST_LOAD_FAST      5 (arr, j)
               BINARY_SUBSCR
               LOAD_FAST                4 (pivot)
               COMPARE_OP              58 (bool(<=))
               POP_JUMP_IF_TRUE         2 (to L2)
               JUMP_BACKWARD           13 (to L1)
 
- 26   L2:     LOAD_FAST                3 (i)
+ 27   L2:     LOAD_FAST                3 (i)
               LOAD_CONST               1 (1)
               BINARY_OP                0 (+)
               STORE_FAST               3 (i)
 
- 27           LOAD_FAST_LOAD_FAST      5 (arr, j)
+ 28           LOAD_FAST_LOAD_FAST      5 (arr, j)
               BINARY_SUBSCR
               LOAD_FAST_LOAD_FAST      3 (arr, i)
               BINARY_SUBSCR
@@ -381,10 +437,10 @@ Disassembly of <code object partition at 0x00000200B31208D0, file "C:\Users\true
               STORE_SUBSCR
               JUMP_BACKWARD           33 (to L1)
 
- 24   L3:     END_FOR
+ 25   L3:     END_FOR
               POP_TOP
 
- 29           LOAD_FAST_LOAD_FAST      2 (arr, high)
+ 30           LOAD_FAST_LOAD_FAST      2 (arr, high)
               BINARY_SUBSCR
               LOAD_FAST_LOAD_FAST      3 (arr, i)
               LOAD_CONST               1 (1)
@@ -398,28 +454,28 @@ Disassembly of <code object partition at 0x00000200B31208D0, file "C:\Users\true
               LOAD_FAST_LOAD_FAST      2 (arr, high)
               STORE_SUBSCR
 
- 30           LOAD_FAST                3 (i)
+ 31           LOAD_FAST                3 (i)
               LOAD_CONST               1 (1)
               BINARY_OP                0 (+)
               RETURN_VALUE
 
-Disassembly of <code object quickSortHelper at 0x00000200B30EFAB0, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\quicksort\quicksort.py", line 32>:
+Disassembly of <code object quickSortHelper at 0x000001C85A788270, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\quicksort\quicksort.py", line 33>:
   --           COPY_FREE_VARS           2
 
-  32           RESUME                   0
+  33           RESUME                   0
 
-  33           LOAD_FAST_LOAD_FAST     18 (low, high)
+  34           LOAD_FAST_LOAD_FAST     18 (low, high)
                COMPARE_OP              18 (bool(<))
                POP_JUMP_IF_FALSE       34 (to L1)
 
-  34           LOAD_DEREF               4 (partition)
+  35           LOAD_DEREF               4 (partition)
                PUSH_NULL
                LOAD_FAST_LOAD_FAST      1 (arr, low)
                LOAD_FAST                2 (high)
                CALL                     3
                STORE_FAST               3 (pi)
 
-  36           LOAD_DEREF               5 (quickSortHelper)
+  37           LOAD_DEREF               5 (quickSortHelper)
                PUSH_NULL
                LOAD_FAST_LOAD_FAST      1 (arr, low)
                LOAD_FAST                3 (pi)
@@ -428,7 +484,7 @@ Disassembly of <code object quickSortHelper at 0x00000200B30EFAB0, file "C:\User
                CALL                     3
                POP_TOP
 
-  37           LOAD_DEREF               5 (quickSortHelper)
+  38           LOAD_DEREF               5 (quickSortHelper)
                PUSH_NULL
                LOAD_FAST_LOAD_FAST      3 (arr, pi)
                LOAD_CONST               1 (1)
@@ -438,4 +494,4 @@ Disassembly of <code object quickSortHelper at 0x00000200B30EFAB0, file "C:\User
                POP_TOP
                RETURN_CONST             0 (None)
 
-  33   L1:     RETURN_CONST             0 (None)
+  34   L1:     RETURN_CONST             0 (None)

@@ -1,4 +1,5 @@
 import os
+import sys
 
 def quicksort(filename):
     """
@@ -48,12 +49,19 @@ def quicksort(filename):
     except Exception as e:
         print(f"Error writing to file: {e}")
 
-if __name__ == "__main__": 
+if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
 
-    input_file = input("Enter the input filename: ")
-    input_path = os.path.join(script_dir, input_file)
+    if len(sys.argv) == 1:
+        input_file = "random_numbers.txt"
+        input_path = os.path.join(script_dir, input_file)
+    elif len(sys.argv) == 2 and sys.argv[1] == '-m':
+        input_file = input("Enter the input filename: ")
+        input_path = os.path.join(script_dir, input_file)
+    else:
+        print("Usage: python quicksort.py [-m]")
+        exit()
 
     print(f"Script directory: {script_dir}")  # Debug print
     print(f"Combined input path: {input_path}") # Debug print

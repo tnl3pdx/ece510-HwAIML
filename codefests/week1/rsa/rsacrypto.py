@@ -1,5 +1,6 @@
 import rsa
 import os
+import sys
 
 def generate_keys():
     (pubkey, privkey) = rsa.newkeys(2048)
@@ -27,8 +28,7 @@ def decrypt_file(filename, privkey):
         with open(filename, 'rb') as infile:
             encrypted_data = infile.read()
         decrypted_data = rsa.decrypt(encrypted_data, privkey)
-        base_filename = filename[:-4] if filename.endswith('.enc') else filename
-        with open(base_filename, 'wb') as outfile:
+        with open('output_decrypt.txt', 'wb') as outfile:
             outfile.write(decrypted_data)
         print("File decrypted successfully.")
     except FileNotFoundError:
@@ -65,40 +65,56 @@ def load_key(filename, key_type):
         return None
 
 def main():
-    while True:
-        print("\nRSA Tool Menu:")
-        print("1. Generate Public and Private Keys")
-        print("2. Encrypt File")
-        print("3. Decrypt File")
-        print("4. Exit")
+    if len(sys.argv) == 1 or (len(sys.argv) == 2 and sys.argv[1] != '-m'):
+        # Run in default mode: generate keys, encrypt, and decrypt
+        pubkey, privkey = generate_keys()
+        save_key(pubkey, 'public.pem')
+        save_key(privkey, 'private.pem')
 
-        choice = input("Enter your choice (1-4): ")
+        # Use existing test file
+        pubkey = load_key('public.pem', "public")
+        if pubkey:
+            encrypt_file('test.txt', pubkey)
 
-        if choice == '1':
-            pubkey, privkey = generate_keys()
-            save_key(pubkey, 'public.pem')
-            save_key(privkey, 'private.pem')
-        elif choice == '2':
-            filename = input("Enter the filename to encrypt: ")
-            filename = os.path.abspath(filename)  # Convert to absolute path
-            pubkey_file = input("Enter the public key filename: ")
-            pubkey_file = os.path.abspath(pubkey_file)  # Convert to absolute path
-            pubkey = load_key(pubkey_file, "public")
-            if pubkey:
-                encrypt_file(filename, pubkey)
-        elif choice == '3':
-            filename = input("Enter the filename to decrypt: ")
-            filename = os.path.abspath(filename)  # Convert to absolute path
-            privkey_file = input("Enter the private key filename: ")
-            privkey_file = os.path.abspath(privkey_file)  # Convert to absolute path
-            privkey = load_key(privkey_file, "private")
-            if privkey:
-                decrypt_file(filename, privkey)
-        elif choice == '4':
-            print("Exiting...")
-            break
-        else:
-            print("Invalid choice. Please enter a number between 1 and 4.")
+        privkey = load_key('private.pem', "private")
+        if privkey:
+            decrypt_file('test.txt.enc', privkey)
+    else:
+        # Run in menu mode
+        while True:
+            print("\nRSA Tool Menu:")
+            print("1. Generate Public and Private Keys")
+            print("2. Encrypt File")
+            print("3. Decrypt File")
+            print("4. Exit")
+
+            choice = input("Enter your choice (1-4): ")
+
+            if choice == '1':
+                pubkey, privkey = generate_keys()
+                save_key(pubkey, 'public.pem')
+                save_key(privkey, 'private.pem')
+            elif choice == '2':
+                filename = input("Enter the filename to encrypt: ")
+                filename = os.path.abspath(filename)  # Convert to absolute path
+                pubkey_file = input("Enter the public key filename: ")
+                pubkey_file = os.path.abspath(pubkey_file)  # Convert to absolute path
+                pubkey = load_key(pubkey_file, "public")
+                if pubkey:
+                    encrypt_file(filename, pubkey)
+            elif choice == '3':
+                filename = input("Enter the filename to decrypt: ")
+                filename = os.path.abspath(filename)  # Convert to absolute path
+                privkey_file = input("Enter the private key filename: ")
+                privkey_file = os.path.abspath(privkey_file)  # Convert to absolute path
+                privkey = load_key(privkey_file, "private")
+                if privkey:
+                    decrypt_file(filename, privkey)
+            elif choice == '4':
+                print("Exiting...")
+                break
+            else:
+                print("Invalid choice. Please enter a number between 1 and 4.")
 
 if __name__ == "__main__":
     main()

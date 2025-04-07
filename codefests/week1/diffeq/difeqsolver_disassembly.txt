@@ -19,60 +19,72 @@
                STORE_NAME               6 (plt)
                POP_TOP
 
-   5           LOAD_CONST              16 ((None,))
-               LOAD_CONST               3 (<code object solve_ode at 0x000001C92F7AAF10, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\diffeq\difeqsolver.py", line 5>)
+   4           LOAD_CONST               0 (0)
+               LOAD_CONST               1 (None)
+               IMPORT_NAME              7 (sys)
+               STORE_NAME               7 (sys)
+
+   6           LOAD_CONST              22 ((None,))
+               LOAD_CONST               3 (<code object solve_ode at 0x0000020618AF2790, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\diffeq\difeqsolver.py", line 6>)
                MAKE_FUNCTION
                SET_FUNCTION_ATTRIBUTE   1 (defaults)
-               STORE_NAME               7 (solve_ode)
+               STORE_NAME               8 (solve_ode)
 
-  20           LOAD_NAME                8 (__name__)
+  21           LOAD_NAME                9 (__name__)
                LOAD_CONST               4 ('__main__')
                COMPARE_OP              88 (bool(==))
                EXTENDED_ARG             1
-               POP_JUMP_IF_FALSE      270 (to L5)
+               POP_JUMP_IF_FALSE      299 (to L7)
 
-  22           LOAD_NAME                9 (input)
-               PUSH_NULL
-               LOAD_CONST               5 ('Enter the ODE as a function of t and y (e.g., -y): ')
-               CALL                     1
-               STORE_NAME              10 (ode_str)
+  23           LOAD_CONST               5 ('-m')
+               LOAD_NAME                7 (sys)
+               LOAD_ATTR               20 (argv)
+               CONTAINS_OP              0
+               POP_JUMP_IF_FALSE       99 (to L5)
 
-  23           LOAD_NAME               11 (float)
+  25           LOAD_NAME               11 (input)
                PUSH_NULL
-               LOAD_NAME                9 (input)
-               PUSH_NULL
-               LOAD_CONST               6 ('Enter the start time: ')
+               LOAD_CONST               6 ('Enter the ODE as a function of t and y (e.g., -y): ')
                CALL                     1
-               CALL                     1
-               STORE_NAME              12 (t_start)
+               STORE_NAME              12 (ode_str)
 
-  24           LOAD_NAME               11 (float)
+  26           LOAD_NAME               13 (float)
                PUSH_NULL
-               LOAD_NAME                9 (input)
+               LOAD_NAME               11 (input)
                PUSH_NULL
-               LOAD_CONST               7 ('Enter the end time: ')
+               LOAD_CONST               7 ('Enter the start time: ')
                CALL                     1
                CALL                     1
-               STORE_NAME              13 (t_end)
+               STORE_NAME              14 (t_start)
 
-  25           LOAD_NAME                9 (input)
+  27           LOAD_NAME               13 (float)
                PUSH_NULL
-               LOAD_CONST               8 ('Enter the initial condition(s) (e.g., 1): ')
+               LOAD_NAME               11 (input)
+               PUSH_NULL
+               LOAD_CONST               8 ('Enter the end time: ')
                CALL                     1
-               STORE_NAME              14 (y0_str)
+               CALL                     1
+               STORE_NAME              15 (t_end)
 
-  26           LOAD_NAME               14 (y0_str)
-               LOAD_ATTR               31 (split + NULL|self)
-               LOAD_CONST               9 (',')
+  28           LOAD_NAME               11 (input)
+               PUSH_NULL
+               LOAD_CONST               9 ('Enter the initial condition(s) (e.g., 1): ')
+               CALL                     1
+               STORE_NAME              16 (y0_str)
+
+  29           LOAD_NAME               16 (y0_str)
+               LOAD_ATTR               35 (split + NULL|self)
+               LOAD_CONST              10 (',')
                CALL                     1
                GET_ITER
                LOAD_FAST_AND_CLEAR      0 (x)
                SWAP                     2
        L1:     BUILD_LIST               0
                SWAP                     2
+               GET_ITER
        L2:     FOR_ITER                11 (to L3)
                STORE_FAST               0 (x)
-               LOAD_NAME               11 (float)
+               LOAD_NAME               13 (float)
                PUSH_NULL
                LOAD_FAST                0 (x)
                CALL                     1
@@ -82,108 +94,125 @@
                POP_TOP
        L4:     SWAP                     2
                STORE_FAST               0 (x)
-               STORE_NAME              16 (y0)
+               STORE_NAME              18 (y0)
 
-  27           LOAD_NAME               17 (int)
+  30           LOAD_NAME               19 (int)
                PUSH_NULL
-               LOAD_NAME                9 (input)
+               LOAD_NAME               11 (input)
                PUSH_NULL
-               LOAD_CONST              10 ('Enter the number of points for evaluation: ')
+               LOAD_CONST              11 ('Enter the number of points for evaluation: ')
                CALL                     1
                CALL                     1
-               STORE_NAME              18 (num_points)
+               STORE_NAME              20 (num_points)
+               JUMP_FORWARD            11 (to L6)
 
-  30           LOAD_CONST              11 (<code object user_ode at 0x000001C92F8CB630, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\diffeq\difeqsolver.py", line 30>)
+  33   L5:     LOAD_CONST              12 ('-y')
+               STORE_NAME              12 (ode_str)
+
+  34           LOAD_CONST              13 (-10.0)
+               STORE_NAME              14 (t_start)
+
+  35           LOAD_CONST              14 (10.0)
+               STORE_NAME              15 (t_end)
+
+  36           LOAD_CONST              15 (1.0)
+               BUILD_LIST               1
+               STORE_NAME              18 (y0)
+
+  37           LOAD_CONST              16 (100)
+               STORE_NAME              20 (num_points)
+
+  40   L6:     LOAD_CONST              17 (<code object user_ode at 0x0000020618B74130, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\diffeq\difeqsolver.py", line 40>)
                MAKE_FUNCTION
-               STORE_NAME              19 (user_ode)
+               STORE_NAME              21 (user_ode)
 
-  34           LOAD_NAME               12 (t_start)
-               LOAD_NAME               13 (t_end)
+  44           LOAD_NAME               14 (t_start)
+               LOAD_NAME               15 (t_end)
                BUILD_TUPLE              2
-               STORE_NAME              20 (t_span)
+               STORE_NAME              22 (t_span)
 
-  35           LOAD_NAME                1 (np)
-               LOAD_ATTR               42 (linspace)
+  45           LOAD_NAME                1 (np)
+               LOAD_ATTR               46 (linspace)
                PUSH_NULL
-               LOAD_NAME               12 (t_start)
-               LOAD_NAME               13 (t_end)
-               LOAD_NAME               18 (num_points)
+               LOAD_NAME               14 (t_start)
+               LOAD_NAME               15 (t_end)
+               LOAD_NAME               20 (num_points)
                CALL                     3
-               STORE_NAME              22 (t_eval)
+               STORE_NAME              24 (t_eval)
 
-  37           LOAD_NAME                7 (solve_ode)
+  47           LOAD_NAME                8 (solve_ode)
                PUSH_NULL
-               LOAD_NAME               19 (user_ode)
-               LOAD_NAME               20 (t_span)
-               LOAD_NAME               16 (y0)
-               LOAD_NAME               22 (t_eval)
+               LOAD_NAME               21 (user_ode)
+               LOAD_NAME               22 (t_span)
+               LOAD_NAME               18 (y0)
+               LOAD_NAME               24 (t_eval)
                CALL                     4
-               STORE_NAME              23 (sol)
+               STORE_NAME              25 (sol)
 
-  39           LOAD_NAME                6 (plt)
-               LOAD_ATTR               48 (plot)
+  49           LOAD_NAME                6 (plt)
+               LOAD_ATTR               52 (plot)
                PUSH_NULL
-               LOAD_NAME               23 (sol)
-               LOAD_ATTR               50 (t)
-               LOAD_NAME               23 (sol)
-               LOAD_ATTR               52 (y)
+               LOAD_NAME               25 (sol)
+               LOAD_ATTR               54 (t)
+               LOAD_NAME               25 (sol)
+               LOAD_ATTR               56 (y)
                LOAD_CONST               0 (0)
                BINARY_SUBSCR
                CALL                     2
                POP_TOP
 
-  40           LOAD_NAME                6 (plt)
-               LOAD_ATTR               54 (xlabel)
+  50           LOAD_NAME                6 (plt)
+               LOAD_ATTR               58 (xlabel)
                PUSH_NULL
-               LOAD_CONST              12 ('t')
+               LOAD_CONST              18 ('t')
                CALL                     1
                POP_TOP
 
-  41           LOAD_NAME                6 (plt)
-               LOAD_ATTR               56 (ylabel)
+  51           LOAD_NAME                6 (plt)
+               LOAD_ATTR               60 (ylabel)
                PUSH_NULL
-               LOAD_CONST              13 ('y(t)')
+               LOAD_CONST              19 ('y(t)')
                CALL                     1
                POP_TOP
 
-  42           LOAD_NAME                6 (plt)
-               LOAD_ATTR               58 (title)
+  52           LOAD_NAME                6 (plt)
+               LOAD_ATTR               62 (title)
                PUSH_NULL
-               LOAD_CONST              14 ('Solution of dy/dt = ')
-               LOAD_NAME               10 (ode_str)
+               LOAD_CONST              20 ('Solution of dy/dt = ')
+               LOAD_NAME               12 (ode_str)
                BINARY_OP                0 (+)
                CALL                     1
                POP_TOP
 
-  43           LOAD_NAME                6 (plt)
-               LOAD_ATTR               60 (grid)
+  53           LOAD_NAME                6 (plt)
+               LOAD_ATTR               64 (grid)
                PUSH_NULL
-               LOAD_CONST              15 (True)
+               LOAD_CONST              21 (True)
                CALL                     1
                POP_TOP
 
-  44           LOAD_NAME                6 (plt)
-               LOAD_ATTR               62 (show)
+  54           LOAD_NAME                6 (plt)
+               LOAD_ATTR               66 (show)
                PUSH_NULL
                CALL                     0
                POP_TOP
                RETURN_CONST             1 (None)
 
-  20   L5:     RETURN_CONST             1 (None)
+  21   L7:     RETURN_CONST             1 (None)
 
-  --   L6:     SWAP                     2
+  --   L8:     SWAP                     2
                POP_TOP
 
-  26           SWAP                     2
+  29           SWAP                     2
                STORE_FAST               0 (x)
                RERAISE                  0
 ExceptionTable:
-  L1 to L4 -> L6 [2]
+  L1 to L4 -> L8 [2]
 
-Disassembly of <code object solve_ode at 0x000001C92F7AAF10, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\diffeq\difeqsolver.py", line 5>:
-  5           RESUME                   0
+Disassembly of <code object solve_ode at 0x0000020618AF2790, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\diffeq\difeqsolver.py", line 6>:
+  6           RESUME                   0
 
- 17           LOAD_GLOBAL              1 (solve_ivp + NULL)
+ 18           LOAD_GLOBAL              1 (solve_ivp + NULL)
               LOAD_FAST_LOAD_FAST      1 (ode_func, t_span)
               LOAD_FAST                2 (y0)
               LOAD_CONST               1 (True)
@@ -192,13 +221,13 @@ Disassembly of <code object solve_ode at 0x000001C92F7AAF10, file "C:\Users\true
               CALL_KW                  5
               STORE_FAST               4 (sol)
 
- 18           LOAD_FAST                4 (sol)
+ 19           LOAD_FAST                4 (sol)
               RETURN_VALUE
 
-Disassembly of <code object user_ode at 0x000001C92F8CB630, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\diffeq\difeqsolver.py", line 30>:
- 30           RESUME                   0
+Disassembly of <code object user_ode at 0x0000020618B74130, file "C:\Users\truet\Documents\GitHub\ece510-HwAIML\codefests\week1\diffeq\difeqsolver.py", line 40>:
+ 40           RESUME                   0
 
- 32           LOAD_GLOBAL              1 (eval + NULL)
+ 42           LOAD_GLOBAL              1 (eval + NULL)
               LOAD_GLOBAL              2 (ode_str)
               LOAD_FAST_LOAD_FAST      1 (t, y)
               LOAD_GLOBAL              4 (np)

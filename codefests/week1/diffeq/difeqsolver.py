@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
+import sys
 
 def solve_ode(ode_func, t_span, y0, t_eval=None):
     """Solves an ODE using scipy.integrate.solve_ivp.
@@ -18,13 +19,22 @@ def solve_ode(ode_func, t_span, y0, t_eval=None):
     return sol
 
 if __name__ == '__main__':
-    # Get user input for the ODE
-    ode_str = input("Enter the ODE as a function of t and y (e.g., -y): ")
-    t_start = float(input("Enter the start time: "))
-    t_end = float(input("Enter the end time: "))
-    y0_str = input("Enter the initial condition(s) (e.g., 1): ")
-    y0 = [float(x) for x in y0_str.split(',')]
-    num_points = int(input("Enter the number of points for evaluation: "))
+    # Check for -m argument
+    if '-m' in sys.argv:
+        # Get user input for the ODE
+        ode_str = input("Enter the ODE as a function of t and y (e.g., -y): ")
+        t_start = float(input("Enter the start time: "))
+        t_end = float(input("Enter the end time: "))
+        y0_str = input("Enter the initial condition(s) (e.g., 1): ")
+        y0 = [float(x) for x in y0_str.split(',')]
+        num_points = int(input("Enter the number of points for evaluation: "))
+    else:
+        # Use default values
+        ode_str = '-y'
+        t_start = -10.0
+        t_end = 10.0
+        y0 = [1.0]
+        num_points = 100
 
     # Define the ODE function based on user input
     def user_ode(t, y):
