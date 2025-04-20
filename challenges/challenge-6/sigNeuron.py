@@ -198,10 +198,9 @@ class SigmoidNeuron:
         plt.grid(True)
         plt.show()
 
-
 def example_usage():
-    """Example of how to use the SigmoidNeuron class for learning XOR."""
-    # XOR problem inputs and targets
+    """Example of how to use the SigmoidNeuron class for learning XOR and NAND."""
+    # Common inputs for both problems
     inputs = np.array([
         [0, 0],
         [0, 1],
@@ -209,39 +208,88 @@ def example_usage():
         [1, 1]
     ])
     
-    targets = np.array([0, 1, 1, 0])
+    # XOR example
+    print("-" * 50)
+    print("XOR PROBLEM EXAMPLE")
+    print("-" * 50)
+    xor_targets = np.array([0, 1, 1, 0])
     
     print("XOR Problem: Note that a single perceptron cannot learn XOR perfectly")
-    print("This example demonstrates the API usage")
     
     # Initialize neuron with fixed random seed
-    neuron = SigmoidNeuron(learning_rate=0.2, random_state=42)
+    xor_neuron = SigmoidNeuron(learning_rate=0.2, random_state=42)
     
-    # Train the neuron
-    errors = neuron.train_batch(inputs, targets, epochs=5000, verbose=True)
+    # Train the neuron on XOR
+    xor_errors = xor_neuron.train_batch(inputs, xor_targets, epochs=5000, verbose=True)
     
-    # Print final predictions
-    print("\nFinal predictions:")
-    for input_pair in inputs:
-        output = neuron.forward(input_pair)
-        prediction = neuron.predict(input_pair)
-        print(f"Input: {input_pair}, Output: {output:.4f}, Prediction: {prediction}")
+    # Print final predictions for XOR
+    print("\nFinal XOR predictions:")
+    for input_pair, target in zip(inputs, xor_targets):
+        output = xor_neuron.forward(input_pair)
+        prediction = xor_neuron.predict(input_pair)
+        print(f"Input: {input_pair}, Target: {target}, Output: {output:.4f}, Prediction: {prediction}")
     
-    # Plot error history
+    # Plot XOR error history
     plt.figure(figsize=(10, 6))
-    plt.plot(errors)
+    plt.plot(xor_errors)
     plt.xlabel('Epoch')
     plt.ylabel('Mean Squared Error')
-    plt.title('Learning Curve')
+    plt.title('XOR Learning Curve')
     plt.grid(True)
     plt.show()
     
-    # Visualize decision boundary
-    neuron.visualize_decision_boundary(inputs, targets)
+    # Visualize XOR decision boundary
+    xor_neuron.visualize_decision_boundary(inputs, xor_targets)
     
-    # Show how to get and set weights
-    weights, bias = neuron.get_weights()
-    print(f"\nLearned weights: {weights}, bias: {bias:.4f}")
+    # Show learned XOR weights
+    weights, bias = xor_neuron.get_weights()
+    print(f"\nLearned XOR weights: {weights}, bias: {bias:.4f}")
+    
+    # NAND example
+    print("\n" + "-" * 50)
+    print("NAND PROBLEM EXAMPLE")
+    print("-" * 50)
+    nand_targets = np.array([1, 1, 1, 0])
+    
+    print("NAND Problem: This should be learnable by a single perceptron")
+    
+    # Initialize neuron with fixed random seed
+    nand_neuron = SigmoidNeuron(learning_rate=0.2, random_state=42)
+    
+    # Train the neuron on NAND
+    nand_errors = nand_neuron.train_batch(inputs, nand_targets, epochs=5000, verbose=True)
+    
+    # Print final predictions for NAND
+    print("\nFinal NAND predictions:")
+    for input_pair, target in zip(inputs, nand_targets):
+        output = nand_neuron.forward(input_pair)
+        prediction = nand_neuron.predict(input_pair)
+        print(f"Input: {input_pair}, Target: {target}, Output: {output:.4f}, Prediction: {prediction}")
+    
+    # Plot NAND error history
+    plt.figure(figsize=(10, 6))
+    plt.plot(nand_errors)
+    plt.xlabel('Epoch')
+    plt.ylabel('Mean Squared Error')
+    plt.title('NAND Learning Curve')
+    plt.grid(True)
+    plt.show()
+    
+    # Visualize NAND decision boundary
+    nand_neuron.visualize_decision_boundary(inputs, nand_targets)
+    
+    # Show learned NAND weights
+    weights, bias = nand_neuron.get_weights()
+    print(f"\nLearned NAND weights: {weights}, bias: {bias:.4f}")
+    
+    # Compare results
+    print("\n" + "-" * 50)
+    print("COMPARISON OF RESULTS")
+    print("-" * 50)
+    print("XOR final MSE: {:.6f}".format(xor_errors[-1]))
+    print("NAND final MSE: {:.6f}".format(nand_errors[-1]))
+    print("\nNote: A single perceptron can learn NAND perfectly but struggles with XOR")
+    print("XOR is not linearly separable, while NAND is linearly separable")
 
 
 if __name__ == "__main__":
