@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import Union, List, Tuple, Optional
+import argparse
 
 
 class SigmoidNeuron:
@@ -390,6 +391,20 @@ class MultiLayerNetwork:
 
 def example_usage():
     """Example of how to use the SigmoidNeuron and MultiLayerNetwork classes for learning XOR and NAND."""
+
+    # Parse command line arguments
+    
+    parser = argparse.ArgumentParser(description="Neural Network Learning Examples")
+    parser.add_argument("--epochs", type=int, default=5000, help="Number of training epochs")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output during training")
+    parser.add_argument("--neurons", type=int, default=3, help="Number of hidden neurons in multi-layer network")
+    
+    args = parser.parse_args()
+    
+    epoch_number = args.epochs
+    verboseness = args.verbose
+    num_neurons = args.neurons
+
     # Common inputs for both problems
     inputs = np.array([
         [0, 0],
@@ -410,10 +425,10 @@ def example_usage():
     xor_neuron = SigmoidNeuron(learning_rate=0.2, random_state=42)
     
     # Train the neuron on XOR
-    xor_errors = xor_neuron.train_batch(inputs, xor_targets, epochs=5000, verbose=True)
+    xor_errors = xor_neuron.train_batch(inputs, xor_targets, epochs=epoch_number, verbose=verboseness)
     
     # Print final predictions for XOR
-    print("\nFinal XOR predictions (single neuron):")
+    print("\nFinal XOR predictions (single neuron - " + str(epoch_number) + " iterations):")
     for input_pair, target in zip(inputs, xor_targets):
         output = xor_neuron.forward(input_pair)
         prediction = xor_neuron.predict(input_pair)
@@ -447,10 +462,10 @@ def example_usage():
     nand_neuron = SigmoidNeuron(learning_rate=0.2, random_state=42)
     
     # Train the neuron on NAND
-    nand_errors = nand_neuron.train_batch(inputs, nand_targets, epochs=5000, verbose=True)
+    nand_errors = nand_neuron.train_batch(inputs, nand_targets, epochs=epoch_number, verbose=verboseness)
     
     # Print final predictions for NAND
-    print("\nFinal NAND predictions (single neuron):")
+    print("\nFinal NAND predictions (single neuron - " + str(epoch_number) + " iterations)):")
     for input_pair, target in zip(inputs, nand_targets):
         output = nand_neuron.forward(input_pair)
         prediction = nand_neuron.predict(input_pair)
@@ -474,17 +489,17 @@ def example_usage():
     
     # XOR example with multi-layer network (2 hidden neurons)
     print("\n" + "-" * 50)
-    print("XOR PROBLEM EXAMPLE - MULTI-LAYER NETWORK (2 NEURONS)")
+    print("XOR PROBLEM EXAMPLE - MULTI-LAYER NETWORK")
     print("-" * 50)
     
     # Initialize multi-layer network with fixed random seed
-    xor_network = MultiLayerNetwork(hidden_neurons=2, learning_rate=0.5, random_state=42)
+    xor_network = MultiLayerNetwork(hidden_neurons=num_neurons, learning_rate=0.5, random_state=42)
     
     # Train the network on XOR
-    xor_network_errors = xor_network.train_batch(inputs, xor_targets, epochs=5000, verbose=True)
+    xor_network_errors = xor_network.train_batch(inputs, xor_targets, epochs=epoch_number, verbose=verboseness)
     
     # Print final predictions for XOR
-    print("\nFinal XOR predictions (multi-layer network):")
+    print("\nFinal XOR predictions (multi-layer network - " + str(xor_network.hidden_neurons) + " neurons - " + str(epoch_number) + " iterations):")
     for input_pair, target in zip(inputs, xor_targets):
         output, _ = xor_network.forward(input_pair)
         prediction = xor_network.predict(input_pair)
@@ -501,20 +516,20 @@ def example_usage():
     
     # Visualize XOR decision boundary
     xor_network.visualize_decision_boundary(inputs, xor_targets)
-    
+
     # NAND example with multi-layer network (2 hidden neurons)
     print("\n" + "-" * 50)
-    print("NAND PROBLEM EXAMPLE - MULTI-LAYER NETWORK (2 NEURONS)")
+    print("NAND PROBLEM EXAMPLE - MULTI-LAYER NETWORK")
     print("-" * 50)
     
     # Initialize multi-layer network with fixed random seed
-    nand_network = MultiLayerNetwork(hidden_neurons=2, learning_rate=0.5, random_state=42)
+    nand_network = MultiLayerNetwork(hidden_neurons=num_neurons, learning_rate=0.5, random_state=42)
     
     # Train the network on NAND
-    nand_network_errors = nand_network.train_batch(inputs, nand_targets, epochs=5000, verbose=True)
+    nand_network_errors = nand_network.train_batch(inputs, nand_targets, epochs=epoch_number, verbose=verboseness)
     
     # Print final predictions for NAND
-    print("\nFinal NAND predictions (multi-layer network):")
+    print("\nFinal NAND predictions (multi-layer network - " + str(nand_network.hidden_neurons) + " neurons - " + str(epoch_number) + " iterations):")
     for input_pair, target in zip(inputs, nand_targets):
         output, _ = nand_network.forward(input_pair)
         prediction = nand_network.predict(input_pair)
