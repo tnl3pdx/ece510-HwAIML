@@ -18,7 +18,7 @@ In Challenge 8, the goal is to develop a multi-layer feed-forward perceptron net
 
 ## Tasks for Challenge 7
     1. Visualize the learning process in a 2D-plane by representing the neuron’s “line” that separates the space.   (DONE)
-    2. You can turn that in an animated visualization that illustrates every step of the weight updating process as you apply the perceptron rule. (WIP)
+    2. You can turn that in an animated visualization that illustrates every step of the weight updating process as you apply the perceptron rule. (DONE)
 
 
 ## Tasks for Challenge 8
