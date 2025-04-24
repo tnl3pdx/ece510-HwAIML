@@ -1,4 +1,3 @@
-
 #%% python --epochs 2000 --verbose True --neurons 5
 
 
@@ -102,20 +101,26 @@ class SigmoidNeuron:
         return error
     
     def train_batch(self, inputs: np.ndarray, targets: np.ndarray, epochs: int = 1000, 
-                   verbose: bool = False) -> List[float]:
+                   verbose: bool = False, log_interval: int = 50) -> Union[List[float], Tuple]:
         """
-        Train the neuron on multiple examples.
+        Train the neuron on multiple examples and optionally log weights for animation.
         
         Args:
             inputs: 2D array of input pairs
             targets: Array of target values
             epochs: Number of training iterations
             verbose: Whether to print progress
+            log_interval: How often to log weights for animation
             
         Returns:
-            List of mean squared errors for each epoch
+            If log_interval > 0: Tuple of (error_history, weight_history)
+            Otherwise: List of mean squared errors for each epoch
         """
         error_history = []
+        weight_history = []  # List to store weight snapshots
+        
+        # Store initial weights
+        weight_history.append((self.weights.copy(), self.bias))
         
         for epoch in range(epochs):
             errors = []
@@ -126,10 +131,14 @@ class SigmoidNeuron:
             mse = np.mean(errors)
             error_history.append(mse)
             
+            # Periodically log weights
+            if epoch % log_interval == 0 or epoch == epochs - 1:
+                weight_history.append((self.weights.copy(), self.bias))
+            
             if verbose and epoch % 100 == 0:
                 print(f"Epoch {epoch}, MSE: {mse:.4f}")
         
-        return error_history
+        return error_history, weight_history
     
     def predict(self, inputs: np.ndarray, threshold: float = 0.5) -> Union[int, np.ndarray]:
         """
@@ -203,6 +212,86 @@ class SigmoidNeuron:
         plt.title('Decision Boundary')
         plt.grid(True)
         plt.show()
+    
+    def animate_decision_boundary(self, inputs: np.ndarray, targets: np.ndarray, 
+                                 weight_history: List, save_path: str = None,
+                                 dpi: int = 70, fps: int = 5, log_interval = 100) -> None:
+        """
+        Create animation showing how the decision boundary evolves during training.
+        
+        Args:
+            inputs: 2D array of input pairs
+            targets: Array of target values
+            weight_history: List of (weights, bias) tuples from training
+            save_path: Path to save the animation
+            dpi: Resolution for the saved animation
+            fps: Frames per second for the animation
+        """
+        # Store original weights to restore later
+        orig_weights, orig_bias = self.weights.copy(), self.bias
+        
+        # Create mesh grid (using coarser grid for performance)
+        x_min, x_max = inputs[:, 0].min() - 0.5, inputs[:, 0].max() + 0.5
+        y_min, y_max = inputs[:, 1].min() - 0.5, inputs[:, 1].max() + 0.5
+        h = 0.02  # Coarser grid for better performance
+        xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
+        
+        # Initialize figure
+        fig, ax = plt.subplots(figsize=(6, 5))
+        
+        # Function to update the plot for each frame
+        def update(frame):
+            # Update weights to those at this frame
+            self.weights, self.bias = weight_history[frame]
+            
+            # Clear the axis for new frame
+            ax.clear()
+            
+            # Calculate decision boundary
+            Z = np.array([self.predict(np.array([x, y])) for x, y in zip(xx.ravel(), yy.ravel())])
+            Z = Z.reshape(xx.shape)
+            
+            # Draw filled contour and data points
+            ax.contourf(xx, yy, Z, alpha=0.3)
+            ax.scatter(inputs[:, 0], inputs[:, 1], c=targets, edgecolors='k', marker='o')
+            
+            # Draw the actual decision line (where sigmoid = 0.5)
+            # Line equation: w1*x + w2*y + b = 0
+            if abs(self.weights[1]) > 1e-10:  # Avoid division by zero
+                slope = -self.weights[0] / self.weights[1]
+                intercept = -self.bias / self.weights[1]
+                line_x = np.array([x_min, x_max])
+                line_y = slope * line_x + intercept
+                ax.plot(line_x, line_y, 'r--', lw=2)
+            
+            # Display epoch info and weight values
+            frame_epoch = frame * log_interval
+            ax.set_title(f"Decision Boundary Evolution - Epoch {frame_epoch}")
+            ax.text(0.05, 0.05, 
+                   f"w1: {self.weights[0]:.3f}\nw2: {self.weights[1]:.3f}\nbias: {self.bias:.3f}", 
+                   transform=ax.transAxes, bbox=dict(facecolor='white', alpha=0.7))
+            
+            # Set labels and grid
+            ax.set_xlabel('Input 1')
+            ax.set_ylabel('Input 2')
+            ax.grid(True)
+            
+            return ax,
+        
+        # Create animation
+        ani = animation.FuncAnimation(fig, update, frames=len(weight_history), interval=200)
+        
+        # Save or show the animation
+        if save_path:
+            ani.save(save_path, writer='pillow', fps=fps, dpi=dpi)
+            plt.close(fig)
+            print(f"Animation saved to {save_path}")
+        else:
+            plt.tight_layout()
+            plt.show()
+        
+        # Restore original weights
+        self.weights, self.bias = orig_weights, orig_bias
 
 
 class MultiLayerNetwork:
@@ -305,20 +394,31 @@ class MultiLayerNetwork:
         return error
     
     def train_batch(self, inputs: np.ndarray, targets: np.ndarray, epochs: int = 1000, 
-                   verbose: bool = False) -> List[float]:
+                   verbose: bool = False, log_interval: int = 50) -> Union[List[float], Tuple]:
         """
-        Train the network on multiple examples.
+        Train the network on multiple examples and optionally log weights for animation.
         
         Args:
             inputs: 2D array of input pairs
             targets: Array of target values
             epochs: Number of training iterations
             verbose: Whether to print progress
+            log_interval: How often to log network state
             
         Returns:
-            List of mean squared errors for each epoch
+            If log_interval > 0: Tuple of (error_history, weight_history)
+            Otherwise: List of mean squared errors for each epoch
         """
         error_history = []
+        weight_history = []  # List to store weight snapshots
+        
+        # Store initial weights
+        weight_history.append((
+            self.weights1.copy(), 
+            self.bias1.copy(), 
+            self.weights2.copy(), 
+            self.bias2
+        ))
         
         for epoch in range(epochs):
             errors = []
@@ -329,10 +429,19 @@ class MultiLayerNetwork:
             mse = np.mean(errors)
             error_history.append(mse)
             
+            # Periodically log weights
+            if epoch % log_interval == 0 or epoch == epochs - 1:
+                weight_history.append((
+                    self.weights1.copy(), 
+                    self.bias1.copy(), 
+                    self.weights2.copy(), 
+                    self.bias2
+                ))
+            
             if verbose and epoch % 100 == 0:
                 print(f"Epoch {epoch}, MSE: {mse:.4f}")
         
-        return error_history
+        return error_history, weight_history
     
     def predict(self, inputs: np.ndarray, threshold: float = 0.5) -> Union[int, np.ndarray]:
         """
@@ -392,24 +501,110 @@ class MultiLayerNetwork:
         plt.title('Decision Boundary')
         plt.grid(True)
         plt.show()
+    
+    def animate_decision_boundary(self, inputs: np.ndarray, targets: np.ndarray, 
+                                 weight_history: List, save_path: str = None,
+                                 dpi: int = 70, fps: int = 5, log_interval = 100) -> None:
+        """
+        Create animation showing how the decision boundary evolves during training.
+        
+        Args:
+            inputs: 2D array of input pairs
+            targets: Array of target values
+            weight_history: List of weight tuples from training
+            save_path: Path to save the animation
+            dpi: Resolution for the saved animation
+            fps: Frames per second for the animation
+        """
+        # Store original weights to restore later
+        orig_w1 = self.weights1.copy()
+        orig_b1 = self.bias1.copy()
+        orig_w2 = self.weights2.copy()
+        orig_b2 = self.bias2
+        
+        # Create mesh grid (using coarser grid for performance)
+        x_min, x_max = inputs[:, 0].min() - 0.5, inputs[:, 0].max() + 0.5
+        y_min, y_max = inputs[:, 1].min() - 0.5, inputs[:, 1].max() + 0.5
+        h = 0.02  # Coarser grid for better performance
+        xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
+        
+        # Initialize figure
+        fig, ax = plt.subplots(figsize=(6, 5))
+        
+        # Function to update the plot for each frame
+        def update(frame):
+            # Update weights to those at this frame
+            self.weights1, self.bias1, self.weights2, self.bias2 = weight_history[frame]
+            
+            # Clear the axis for new frame
+            ax.clear()
+            
+            # Calculate decision boundary
+            Z = np.array([self.predict(np.array([x, y])) for x, y in zip(xx.ravel(), yy.ravel())])
+            Z = Z.reshape(xx.shape)
+            
+            # Draw filled contour and data points
+            ax.contourf(xx, yy, Z, alpha=0.3)
+            ax.scatter(inputs[:, 0], inputs[:, 1], c=targets, edgecolors='k', marker='o')
+            
+            # Display epoch info and network details
+            frame_epoch = frame * log_interval
+            ax.set_title(f"Decision Boundary Evolution - Epoch {frame_epoch}")
+            
+            # Calculate current MSE
+            errors = []
+            for x, y in zip(inputs, targets):
+                out, _ = self.forward(x)
+                errors.append((y - out) ** 2)
+            mse = np.mean(errors)
+            
+            # Display network info
+            ax.text(0.05, 0.05, 
+                   f"Hidden neurons: {self.hidden_neurons}\nMSE: {mse:.6f}", 
+                   transform=ax.transAxes, bbox=dict(facecolor='white', alpha=0.7))
+            
+            # Set labels and grid
+            ax.set_xlabel('Input 1')
+            ax.set_ylabel('Input 2')
+            ax.grid(True)
+            
+            return ax,
+        
+        # Create animation
+        ani = animation.FuncAnimation(fig, update, frames=len(weight_history), interval=200)
+        
+        # Save or show the animation
+        if save_path:
+            ani.save(save_path, writer='pillow', fps=fps, dpi=dpi)
+            plt.close(fig)
+            print(f"Animation saved to {save_path}")
+        else:
+            plt.tight_layout()
+            plt.show()
+        
+        # Restore original weights
+        self.weights1, self.bias1, self.weights2, self.bias2 = orig_w1, orig_b1, orig_w2, orig_b2
 
 
 def example_usage():
     """Example of how to use the SigmoidNeuron and MultiLayerNetwork classes for learning XOR and NAND."""
 
-    # Parse command line arguments
-    
+    # Add new command line arguments for animation
     parser = argparse.ArgumentParser(description="Neural Network Learning Examples")
     parser.add_argument("-f", "--fff", help="a dummy argument to fool ipython", default="1")
     parser.add_argument("--epochs", type=int, default=5000, help="Number of training epochs")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output during training")
     parser.add_argument("--neurons", type=int, default=3, help="Number of hidden neurons in multi-layer network")
+    parser.add_argument("--animate", action="store_true", help="Generate decision boundary animations")
+    parser.add_argument("--log-interval", type=int, default=100, help="Interval for logging animation frames")
     
     args = parser.parse_args()
     
     epoch_number = args.epochs
     verboseness = args.verbose
     num_neurons = args.neurons
+    animate = args.animate
+    log_interval = args.log_interval
 
     # Common inputs for both problems
     inputs = np.array([
@@ -430,8 +625,19 @@ def example_usage():
     # Initialize neuron with fixed random seed
     xor_neuron = SigmoidNeuron(learning_rate=0.2, random_state=42)
     
-    # Train the neuron on XOR
-    xor_errors = xor_neuron.train_batch(inputs, xor_targets, epochs=epoch_number, verbose=verboseness)
+    # Train the neuron on XOR (with animation if requested)
+    if animate:
+        xor_errors, xor_weights = xor_neuron.train_batch(
+            inputs, xor_targets, epochs=epoch_number, 
+            verbose=verboseness, log_interval=log_interval
+        )
+        # Generate animation after training
+        xor_neuron.animate_decision_boundary(
+            inputs, xor_targets, xor_weights, 
+            save_path="xor_neuron_boundary.gif", dpi=100, fps=5, log_interval=log_interval
+        )
+    else:
+        xor_errors = xor_neuron.train_batch(inputs, xor_targets, epochs=epoch_number, verbose=verboseness)
     
     # Print final predictions for XOR
     print("\nFinal XOR predictions (single neuron - " + str(epoch_number) + " iterations):")
@@ -467,8 +673,19 @@ def example_usage():
     # Initialize neuron with fixed random seed
     nand_neuron = SigmoidNeuron(learning_rate=0.2, random_state=42)
     
-    # Train the neuron on NAND
-    nand_errors = nand_neuron.train_batch(inputs, nand_targets, epochs=epoch_number, verbose=verboseness)
+    # Train the neuron on NAND (with animation if requested)
+    if animate:
+        nand_errors, nand_weights = nand_neuron.train_batch(
+            inputs, nand_targets, epochs=epoch_number, 
+            verbose=verboseness, log_interval=log_interval
+        )
+        # Generate animation after training
+        nand_neuron.animate_decision_boundary(
+            inputs, nand_targets, nand_weights, 
+            save_path="nand_neuron_boundary.gif", dpi=100, fps=5, log_interval=log_interval
+        )
+    else:
+        nand_errors = nand_neuron.train_batch(inputs, nand_targets, epochs=epoch_number, verbose=verboseness)
     
     # Print final predictions for NAND
     print("\nFinal NAND predictions (single neuron - " + str(epoch_number) + " iterations)):")
@@ -493,7 +710,7 @@ def example_usage():
     weights, bias = nand_neuron.get_weights()
     print(f"\nLearned NAND weights (single neuron): {weights}, bias: {bias:.4f}")
     
-    # XOR example with multi-layer network (2 hidden neurons)
+    # XOR example with multi-layer network
     print("\n" + "-" * 50)
     print("XOR PROBLEM EXAMPLE - MULTI-LAYER NETWORK")
     print("-" * 50)
@@ -501,8 +718,19 @@ def example_usage():
     # Initialize multi-layer network with fixed random seed
     xor_network = MultiLayerNetwork(hidden_neurons=num_neurons, learning_rate=0.5, random_state=42)
     
-    # Train the network on XOR
-    xor_network_errors = xor_network.train_batch(inputs, xor_targets, epochs=epoch_number, verbose=verboseness)
+    # Train the network on XOR (with animation if requested)
+    if animate:
+        xor_network_errors, xor_network_weights = xor_network.train_batch(
+            inputs, xor_targets, epochs=epoch_number, 
+            verbose=verboseness, log_interval=log_interval
+        )
+        # Generate animation after training
+        xor_network.animate_decision_boundary(
+            inputs, xor_targets, xor_network_weights, 
+            save_path="xor_network_boundary.gif", dpi=100, fps=5, log_interval=log_interval
+        )
+    else:
+        xor_network_errors = xor_network.train_batch(inputs, xor_targets, epochs=epoch_number, verbose=verboseness)
     
     # Print final predictions for XOR
     print("\nFinal XOR predictions (multi-layer network - " + str(xor_network.hidden_neurons) + " neurons - " + str(epoch_number) + " iterations):")
@@ -523,7 +751,7 @@ def example_usage():
     # Visualize XOR decision boundary
     xor_network.visualize_decision_boundary(inputs, xor_targets)
 
-    # NAND example with multi-layer network (2 hidden neurons)
+    # NAND example with multi-layer network
     print("\n" + "-" * 50)
     print("NAND PROBLEM EXAMPLE - MULTI-LAYER NETWORK")
     print("-" * 50)
@@ -531,8 +759,19 @@ def example_usage():
     # Initialize multi-layer network with fixed random seed
     nand_network = MultiLayerNetwork(hidden_neurons=num_neurons, learning_rate=0.5, random_state=42)
     
-    # Train the network on NAND
-    nand_network_errors = nand_network.train_batch(inputs, nand_targets, epochs=epoch_number, verbose=verboseness)
+    # Train the network on NAND (with animation if requested)
+    if animate:
+        nand_network_errors, nand_network_weights = nand_network.train_batch(
+            inputs, nand_targets, epochs=epoch_number, 
+            verbose=verboseness, log_interval=log_interval
+        )
+        # Generate animation after training
+        nand_network.animate_decision_boundary(
+            inputs, nand_targets, nand_network_weights, 
+            save_path="nand_network_boundary.gif", dpi=100, fps=5, log_interval=log_interval
+        )
+    else:
+        nand_network_errors = nand_network.train_batch(inputs, nand_targets, epochs=epoch_number, verbose=verboseness)
     
     # Print final predictions for NAND
     print("\nFinal NAND predictions (multi-layer network - " + str(nand_network.hidden_neurons) + " neurons - " + str(epoch_number) + " iterations):")
