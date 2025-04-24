@@ -2,7 +2,7 @@ import os
 import argparse
 import numpy as np
 import gymnasium as gym
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, SAC
 from stable_baselines3.common.vec_env import DummyVecEnv, VecFrameStack
 
 def parse_arguments():
@@ -13,6 +13,9 @@ def parse_arguments():
                         help='Number of episodes to run')
     parser.add_argument('--render', action='store_true',
                         help='Render the environment')
+    parser.add_argument('--model', type=str, default='PPO',
+                        choices=['PPO', 'SAC'],
+                        help='Model type to use for evaluation')
     return parser.parse_args()
 
 def make_env():
@@ -39,7 +42,11 @@ def main():
     env = VecFrameStack(env, n_stack=4)  # Same stack as during training
     
     # Load the trained model
-    model = PPO.load(model_path, env=env)
+    if args.model == 'PPO':
+        model = PPO.load(model_path, env=env)
+    elif args.model == 'SAC':
+        # If using SAC, ensure the environment is compatible
+        model = SAC.load(model_path, env=env)
     
     # Run the model
     total_rewards = []
