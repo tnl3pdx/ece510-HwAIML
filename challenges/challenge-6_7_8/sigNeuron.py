@@ -1,5 +1,10 @@
+
+#%% python --epochs 2000 --verbose True --neurons 5
+
+
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 from typing import Union, List, Tuple, Optional
 import argparse
 
@@ -190,7 +195,7 @@ class SigmoidNeuron:
         Z = Z.reshape(xx.shape)
         
         # Plot the decision boundary
-        plt.figure(figsize=(10, 8))
+        plt.figure(figsize=(6, 4))
         plt.contourf(xx, yy, Z, alpha=0.3)
         plt.scatter(inputs[:, 0], inputs[:, 1], c=targets, edgecolors='k', marker='o')
         plt.xlabel('Input 1')
@@ -379,7 +384,7 @@ class MultiLayerNetwork:
         Z = Z.reshape(xx.shape)
         
         # Plot the decision boundary
-        plt.figure(figsize=(10, 8))
+        plt.figure(figsize=(6, 4))
         plt.contourf(xx, yy, Z, alpha=0.3)
         plt.scatter(inputs[:, 0], inputs[:, 1], c=targets, edgecolors='k', marker='o')
         plt.xlabel('Input 1')
@@ -395,6 +400,7 @@ def example_usage():
     # Parse command line arguments
     
     parser = argparse.ArgumentParser(description="Neural Network Learning Examples")
+    parser.add_argument("-f", "--fff", help="a dummy argument to fool ipython", default="1")
     parser.add_argument("--epochs", type=int, default=5000, help="Number of training epochs")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output during training")
     parser.add_argument("--neurons", type=int, default=3, help="Number of hidden neurons in multi-layer network")
@@ -435,7 +441,7 @@ def example_usage():
         print(f"Input: {input_pair}, Target: {target}, Output: {output:.4f}, Prediction: {prediction}")
     
     # Plot XOR error history
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(6, 4))
     plt.plot(xor_errors)
     plt.xlabel('Epoch')
     plt.ylabel('Mean Squared Error')
@@ -472,7 +478,7 @@ def example_usage():
         print(f"Input: {input_pair}, Target: {target}, Output: {output:.4f}, Prediction: {prediction}")
     
     # Plot NAND error history
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(6, 4))
     plt.plot(nand_errors)
     plt.xlabel('Epoch')
     plt.ylabel('Mean Squared Error')
@@ -506,7 +512,7 @@ def example_usage():
         print(f"Input: {input_pair}, Target: {target}, Output: {output:.4f}, Prediction: {prediction}")
     
     # Plot XOR error history
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(6, 4))
     plt.plot(xor_network_errors)
     plt.xlabel('Epoch')
     plt.ylabel('Mean Squared Error')
@@ -536,7 +542,7 @@ def example_usage():
         print(f"Input: {input_pair}, Target: {target}, Output: {output:.4f}, Prediction: {prediction}")
     
     # Plot NAND error history
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(6, 4))
     plt.plot(nand_network_errors)
     plt.xlabel('Epoch')
     plt.ylabel('Mean Squared Error')
@@ -561,3 +567,4 @@ def example_usage():
 
 if __name__ == "__main__":
     example_usage()
+# %%

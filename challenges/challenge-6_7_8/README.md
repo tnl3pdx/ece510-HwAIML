@@ -11,18 +11,17 @@ In Challenge 8, the goal is to develop a multi-layer feed-forward perceptron net
 [Log for Challenge 6/7/8](https://docs.google.com/document/d/1fHLvWTa1VuwOcmNT2DHk5nrVDTTodrpD6BzS71KGAKU/edit?usp=sharing)
 
 ## Tasks for Challenge 6
-    1. Implement a simple neuron (a.k.a. perceptron) with two inputs and a sigmoid activation function.
-    2. Use the perceptron learning rule (Google or LLM it) to train the neuron to realize the following
-    binary logic functions:
-        a. NAND
-        b. XOR
+    1. Implement a simple neuron (a.k.a. perceptron) with two inputs and a sigmoid activation function.     (DONE)
+    2. Use the perceptron learning rule (Google or LLM it) to train the neuron to realize the following binary logic functions:
+        a. NAND     (DONE)
+        b. XOR      (DONE)
 
 ## Tasks for Challenge 7
-    1. Visualize the learning process in a 2D-plane by representing the neuron’s “line” that separates the space.
-    2. You can turn that in an animated visualization that illustrates every step of the weight updating process as you apply the perceptron rule.
+    1. Visualize the learning process in a 2D-plane by representing the neuron’s “line” that separates the space.   (DONE)
+    2. You can turn that in an animated visualization that illustrates every step of the weight updating process as you apply the perceptron rule. (WIP)
 
 
 ## Tasks for Challenge 8
-    1. Implement a multi-layer feed-forward perceptron network. The network should have two input neurons, two hidden neurons, and one output neuron.
-    2. Implement the backpropagation algorithm to train your network to solve the XOR logical function.
+    1. Implement a multi-layer feed-forward perceptron network. The network should have two input neurons, two hidden neurons, and one output neuron.   (DONE)
+    2. Implement the backpropagation algorithm to train your network to solve the XOR logical function.     (DONE)
 
