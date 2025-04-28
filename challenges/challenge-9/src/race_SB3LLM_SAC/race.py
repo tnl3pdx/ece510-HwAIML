@@ -1,10 +1,12 @@
 import os
 import argparse
 import numpy as np
-from stable_baselines3 import SAC  # Changed from PPO to SAC
+from stable_baselines3 import SAC as SAC_SB3
+from sac.sac import SAC as SAC_LLM
 from stable_baselines3.common.vec_env import DummyVecEnv, VecFrameStack
 from stable_baselines3.common.callbacks import CheckpointCallback
 import gymnasium as gym
+import inspect
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Train an RL model for car racing")
@@ -14,6 +16,7 @@ def parse_arguments():
                         help='Name of the output model file')
     parser.add_argument('--checkpoint_freq', type=int, default=10000,
                         help='Frequency to save checkpoints during training')
+    parser.add_argument('--model_source', type=str, default='SB3')
     return parser.parse_args()
 
 def make_env():
@@ -42,22 +45,48 @@ def main():
         name_prefix=args.model_name
     )
     
+    # Check the location of the two SAC implementations
+    sb3_path = inspect.getfile(SAC_SB3)
+    print(f"SB3 SAC implementation located at: {sb3_path}")
+
+    llm_path = inspect.getfile(SAC_LLM)
+    print(f"LLM SAC implementation located at: {llm_path}")
+    
     print(f"Initializing SAC model...")  # Changed from PPO to SAC
-    model = SAC(  # Changed from PPO to SAC
-        "CnnPolicy",
-        env,
-        verbose=1,
-        learning_rate=3e-4,
-        buffer_size=50000,         # SAC specific parameter
-        learning_starts=1000,      # SAC specific parameter
-        batch_size=64,
-        tau=0.005,                 # SAC specific parameter
-        gamma=0.99,
-        train_freq=1,              # SAC specific parameter
-        gradient_steps=1,          # SAC specific parameter
-        ent_coef="auto",           # SAC specific parameter
-        tensorboard_log=os.path.join(model_dir, "tensorboard_logs")
-    )
+    if args.model_source == "SB3":
+        print("Using SB3 library for model training.")
+        model = SAC_SB3( 
+            "CnnPolicy",
+            env,
+            verbose=1,
+            learning_rate=3e-4,
+            buffer_size=50000,         # SAC specific parameter
+            learning_starts=1000,      # SAC specific parameter
+            batch_size=64,
+            tau=0.005,                 # SAC specific parameter
+            gamma=0.99,
+            train_freq=1,              # SAC specific parameter
+            gradient_steps=1,          # SAC specific parameter
+            ent_coef="auto",           # SAC specific parameter
+            tensorboard_log=os.path.join(model_dir, "tensorboard_logs")
+        )
+    elif args.model_source == "LLM":
+        print("Using LLM-enhanced model source.")
+        model = SAC_LLM(
+            "CnnPolicy",
+            env,
+            verbose=1,
+            learning_rate=3e-4,
+            buffer_size=50000,         # SAC specific parameter
+            learning_starts=1000,      # SAC specific parameter
+            batch_size=64,
+            tau=0.005,                 # SAC specific parameter
+            gamma=0.99,
+            train_freq=1,              # SAC specific parameter
+            gradient_steps=1,          # SAC specific parameter
+            ent_coef="auto",           # SAC specific parameter
+            tensorboard_log=os.path.join(model_dir, "tensorboard_logs")
+        )
     
     print(f"Training model for {args.timesteps} timesteps...")
     model.learn(
