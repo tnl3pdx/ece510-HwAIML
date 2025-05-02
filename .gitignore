@@ -5,3 +5,5 @@
 .vscode/
 *.gif
 .temp
+*.0
+.*

@@ -1,5 +1,0 @@
-numpy
-swig
-tensorboard
-gymnasium[box2d]
-stable-baselines3
