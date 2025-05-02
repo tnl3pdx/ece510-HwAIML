@@ -9,3 +9,6 @@
 .*
 *.key
 *.bin
+*.pyc
+*.png
+my_profiles

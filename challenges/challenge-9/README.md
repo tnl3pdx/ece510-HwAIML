@@ -14,6 +14,7 @@ These are detailed in the log.
 ### Useful Links for SPHINCS+ resources:
 
 [Explaination of SPHINCS+](https://er4hn.info/blog/2023.12.16-sphincs_plus-step-by-step/)
+[Demo of SPHINCS+](https://asecuritysite.com/hashsig/sphincs01)
 
 
 ## Tasks for C9

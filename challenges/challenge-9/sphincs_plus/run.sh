@@ -14,13 +14,25 @@ if [ ! -f "$1" ]; then
     echo "File $1 does not exist."
     exit 1
 fi
-
-if [[ -n "$(ls -A "$DIR/myprofiles")" ]]; then
-    echo "The directory '$DIR/myprofiles' is not empty. Removing all files..."
-    rm -rf "$DIR/myprofiles/*"
+<<com
+if [ "$(find "$DIR/my_profiles" -mindepth 1 -print -quit 2>/dev/null)" ]; then
+    if [[ -n "$(ls -A "$DIR/my_profiles")" ]]; then
+        echo "The directory '$DIR/my_profiles' is not empty."
+        read -p "Are you sure you want to remove all files in '$DIR/my_profiles'? (y/n): " confirm
+        if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
+            rm -rf "$DIR/my_profiles/*"
+            echo "All files removed from '$DIR/my_profiles'."
+        else
+            echo "Operation canceled. No files were removed."
+        fi
+    else
+        echo "The directory '$DIR/my_profiles' is empty. Continuing..."
+    fi
 else
-    echo "The directory '$DIR/myprofiles' is empty. Continuing..."
+    echo "The directory '$DIR/_myprofiles' does not exist. Creating it..."
+    mkdir -p "$DIR/my_profiles"
 fi
+com
 
 if [ -f "$DIR/sphincs_plus.py" ]; then
     echo "sphincs_plus.py exists. Proceeding with encryption."
