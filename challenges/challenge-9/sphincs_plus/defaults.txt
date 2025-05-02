@@ -1,0 +1,63 @@
+For 128-bit Security:
+
+SPHINCS+-128f (Fast variant):
+n = 16 bytes
+h = 60
+d = 20
+k = 10
+w = 16
+t = 16 (2^4)
+
+
+SPHINCS+-128s (Small signatures):
+n = 16 bytes
+h = 63
+d = 7
+k = 14
+w = 16
+t = 16 (2^4)
+
+
+For 192-bit Security:
+
+SPHINCS+-192f (Fast variant):
+n = 24 bytes
+h = 66
+d = 22
+k = 8
+w = 16
+t = 16 (2^4)
+
+SPHINCS+-192s (Small signatures):
+n = 24 bytes
+h = 63
+d = 7
+k = 17
+w = 16
+t = 16 (2^4)
+
+
+For 256-bit Security:
+
+SPHINCS+-256f (Fast variant):
+n = 32 bytes
+h = 68
+d = 17
+k = 10
+w = 16
+t = 16 (2^4)
+
+SPHINCS+-256s (Small signatures):
+n = 32 bytes
+h = 64
+d = 8
+k = 14
+w = 16
+t = 16 (2^4)
+
+16
+65
+8
+16
+16
+2**6
