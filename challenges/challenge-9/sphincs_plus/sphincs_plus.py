@@ -4,6 +4,9 @@ import sys
 import argparse
 from typing import List, Tuple, Optional 
 import time
+from profiler import Profiler
+
+profiler = Profiler(output_dir="my_profiles")
 
 class SPHINCSPlus:
     """
@@ -498,7 +501,8 @@ class SPHINCSPlus:
         
         print(f"Key generation completed in {time.time() - start_time:.2f} seconds")
         return private_key, public_key
-        
+    
+    @profiler.profile_decorator()    
     def sign(self, message: bytes, private_key: bytes) -> bytes:
         """Sign a message using a private key."""
         start_time = time.time()
@@ -533,7 +537,8 @@ class SPHINCSPlus:
         print(f"Signing completed in {time.time() - start_time:.2f} seconds")
         print(f"Signature size: {len(signature)} bytes")
         return bytes(signature)
-        
+    
+    @profiler.profile_decorator()    
     def verify(self, message: bytes, signature: bytes, public_key: bytes) -> bool:
         """Verify a signature on a message using a public key."""
         start_time = time.time()

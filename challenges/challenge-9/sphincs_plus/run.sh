@@ -15,6 +15,12 @@ if [ ! -f "$1" ]; then
     exit 1
 fi
 
+if [[ -n "$(ls -A "$DIR/myprofiles")" ]]; then
+    echo "The directory '$DIR/myprofiles' is not empty. Removing all files..."
+    rm -rf "$DIR/myprofiles/*"
+else
+    echo "The directory '$DIR/myprofiles' is empty. Continuing..."
+fi
 
 if [ -f "$DIR/sphincs_plus.py" ]; then
     echo "sphincs_plus.py exists. Proceeding with encryption."
