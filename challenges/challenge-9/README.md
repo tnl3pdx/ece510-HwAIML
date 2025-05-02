@@ -1,10 +1,19 @@
 # Challenge 9: Final Project Decision and Introduction
 
-This challenge will be a introduction into researching and choosing a final project for the term. The project I chose is to develop an RL accelerator that can improve the training time for car driving.
+This challenge will be a introduction into researching and choosing a final project for the term. The project I chose is to develop an RL accelerator that can improve the speed of SPHINCS+ signature algorithm. This code is generated using LLMs.
 
-Before selecting this project, I tried to look into a RL-based PCB component placer program, but I faced several issues involving the code provided by the paper and training time in general. These are detailed in the log.
+Before selecting this project, I tried to look into a RL-based PCB component placer program, but I faced several issues involving the code provided by the paper and training time in general. 
 
-[Log for Challenge 9](https://docs.google.com/document/d/19jQnhDfZXu6YweQI545uACPpJ-LIOy4y2dxP9cnUEXE/edit?usp=sharing)
+My second attempt involved looking into RL racing training and optimizing the intensive functions using hardware, however the code was heavily reliant on libraries from SB3 which resulted in difficulty of determining what functions were the root bootnecks.
+
+These are detailed in the log.
+
+[Log for Challenge 9 (Old)](https://docs.google.com/document/d/19jQnhDfZXu6YweQI545uACPpJ-LIOy4y2dxP9cnUEXE/edit?usp=sharing)
+
+
+### Useful Links for SPHINCS+ resources:
+
+[Explaination of SPHINCS+](https://er4hn.info/blog/2023.12.16-sphincs_plus-step-by-step/)
 
 
 ## Tasks for C9
