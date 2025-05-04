@@ -218,7 +218,7 @@ class Profiler:
         # Configure pycallgraph
         output_file = os.path.join(self.output_dir, f"{output_prefix}_callgraph.png")
         graphviz = GraphvizOutput(output_file=output_file)
-        config = Config(max_depth=3)
+        config = Config()
         
         # Set filters
         if self.include_patterns or self.exclude_patterns:

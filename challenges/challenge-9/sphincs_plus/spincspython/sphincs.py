@@ -10,8 +10,9 @@ import hashlib
 from spincspython.adrs import ADRS
 from spincspython.profiler import Profiler
 
-prof_tool = Profiler(output_dir="my_profiles", exclude_patterns=["*.ADRS.*", "*.chain", "*.hash", "*.prf", "*treehash"])
-
+#prof_tool = Profiler(output_dir="my_profiles", exclude_patterns=["*.ADRS.*", "*.chain", "*.hash", "*.prf", "*treehash"])
+prof_tool = Profiler(output_dir="my_profiles")
+                     
 # TWEAKABLES & UTILS
 def hash(seed, adrs: ADRS, value, digest_size):
     m = hashlib.sha256()
