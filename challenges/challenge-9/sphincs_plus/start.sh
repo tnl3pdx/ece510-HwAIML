@@ -15,8 +15,17 @@ source "$DIR/.venv/bin/activate"
 
 # Install requirements if requirements.txt exists
 if [ -f "$DIR/requirements.txt" ]; then
+    echo "Checking for swig installation..."
+    if ! command -v swig &> /dev/null; then
+        echo "swig could not be found. Use the following command to install it:"
+        echo "sudo apt-get install swig"
+        echo "After installing swig, please run this script again."
+        exit 1
+    else
+        echo "swig is already installed. Continuing..."
+    fi
     echo "Installing requirements..."
-    pip install -r "$DIR/requirements.txt"
+    python3 -m pip install -r "$DIR/requirements.txt"
 else
     echo "Warning: requirements.txt not found."
 fi
