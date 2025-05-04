@@ -1,6 +1,8 @@
 # Challenge 9: Final Project Decision and Introduction
 
-This challenge will be a introduction into researching and choosing a final project for the term. The project I chose is to develop an RL accelerator that can improve the speed of SPHINCS+ signature algorithm. This code is generated using LLMs.
+This challenge will be a introduction into researching and choosing a final project for the term. The project I chose is to develop an RL accelerator that can improve the speed of SPHINCS+ signature algorithm. This code is based on the work of this Git repository:
+
+[SPINCS-PYTHON](https://github.com/tottifi/sphincs-python)
 
 Before selecting this project, I tried to look into a RL-based PCB component placer program, but I faced several issues involving the code provided by the paper and training time in general. 
 
@@ -15,11 +17,6 @@ These are detailed in the log.
 
 [Explaination of SPHINCS+](https://er4hn.info/blog/2023.12.16-sphincs_plus-step-by-step/)
 [Demo of SPHINCS+](https://asecuritysite.com/hashsig/sphincs01)
-
-# NOTE (Issue with Swig binary)
-Installing swig which is used in the installation of box2d-py results in an error. It is recommended to install swig using the following command:
-
-      sudo apt install swig
 
 ## Tasks for C9
     1. Answer the Heilmeier questions for your project idea
