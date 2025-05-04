@@ -579,7 +579,6 @@ class SPHINCSPlus:
         valid = wots_root == root
         
         print(f"Verification completed in {time.time() - start_time:.2f} seconds")
-        print(f"Signature is {'valid' if valid else 'invalid'}")
         return valid
         
     def save_keypair(self, private_key: bytes, public_key: bytes, 
@@ -608,6 +607,7 @@ class SPHINCSPlus:
         print(f"Public key loaded from: {pk_filename}")
         return private_key, public_key
 
+    @profiler.profile_decorator()  
     def test_fors_functions(self):
         """Test FORS sign and verify functions."""
         print("Testing FORS functions...")
@@ -640,6 +640,7 @@ class SPHINCSPlus:
         
         return original_pk == verified_pk
 
+    @profiler.profile_decorator()  
     def test_wots_functions(self):
         """Test WOTS+ sign and verify functions."""
         print("Testing WOTS+ functions...")
@@ -694,8 +695,10 @@ def main():
                        help='Private key file')
     parser.add_argument('--pk', type=str, default='sphincs_public.key',
                        help='Public key file')
-    parser.add_argument('--test', action='store_true',
+    parser.add_argument('-t', '--test', action='store_true',
                        help='Run test for FORS functions')
+    parser.add_argument('-p', '--profile', action='store_true',
+                       help='Enable profiler for performance analysis')
 
     
     # SPHINCS+ parameters
@@ -713,6 +716,9 @@ def main():
                        help='FORS tree size')
     
     args = parser.parse_args()
+    
+    profiler.profile_enabled(args.profile)
+    print(f"Profiler: " + ("Enabled" if args.profile == True else "Disabled"))
     
     # Create SPHINCS+ instance
     sphincs = SPHINCSPlus(

@@ -47,6 +47,20 @@ class Profiler:
         
         # Verify graphviz availability
         self.has_pycallgraph = PYCALLGRAPH_AVAILABLE
+        self.enabled = True
+    
+    def profile_enabled(self, en: bool) -> bool:
+        """
+        Enable or disable profiling.
+        
+        Args:
+            en: Boolean to enable or disable profiling
+            
+        Returns:
+            The current state of profiling
+        """
+        self.enabled = en
+        return self.enabled
     
     def profile_function(self, 
                         func: Callable, 
@@ -69,6 +83,10 @@ class Profiler:
         Returns:
             The return value of the function
         """
+        if not self.enabled:
+            print("Profiling is disabled.")
+            return func(*args, **kwargs)
+        
         # Generate default output prefix if not provided
         if output_prefix is None:
             output_prefix = f"{func.__name__}_{int(time.time())}"
