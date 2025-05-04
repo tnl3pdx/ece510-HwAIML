@@ -1,3 +1,4 @@
 python-call-graph
 graphviz
 snakeviz
+py-spy

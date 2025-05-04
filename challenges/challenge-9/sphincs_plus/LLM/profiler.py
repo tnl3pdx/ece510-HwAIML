@@ -8,6 +8,7 @@ import sys
 from typing import Callable, List, Any
 from functools import wraps
 
+
 # Try importing pycallgraph, but don't fail if not installed
 try:
     from pycallgraph import PyCallGraph
@@ -214,6 +215,13 @@ class Profiler:
         output_file = os.path.join(self.output_dir, f"{output_prefix}_callgraph.png")
         graphviz = GraphvizOutput(output_file=output_file)
         config = Config()
+        config.colors = {
+            'background': '#ffffff',
+            'node_fill': '#cccccc',
+            'node_border': '#000000',
+            'edge': '#000000',
+            'edge_highlight': '#ff0000',
+        }
         
         # Set filters
         if self.include_patterns or self.exclude_patterns:
