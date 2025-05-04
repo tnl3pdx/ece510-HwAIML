@@ -8,12 +8,6 @@ if [ $# -eq 0 ]; then
     echo "No arguments provided. Please provide the input file to encrypt."
     exit 1
 fi
-# Check if first arguement is "test"
-if [ "$1" == "test" ]; then
-    echo "Running test..."
-    python sphincs_plus.py --test $2
-    exit 0
-fi
 
 # Check if file exists
 if [ ! -f "$1" ]; then
@@ -40,14 +34,17 @@ else
 fi
 
 
-if [ -f "$DIR/sphincs_plus.py" ]; then
-    echo "sphincs_plus.py exists. Proceeding with encryption."
+if [ -f "$DIR/sphincs_wrapper.py" ]; then
+    echo "sphincs_wrapper.py exists. Proceeding with encryption."
 else
-    echo "sphincs_plus.py does not exist. Please ensure the file is in the current directory."
+    echo "sphincs_wrapper.py does not exist. Please ensure the file is in the current directory."
     exit 1
 fi
 
 # Generate a random key
-python sphincs_plus.py --keygen 
-python sphincs_plus.py --sign --input $1 --signature signature.bin $2
-python sphincs_plus.py --verify --input $1 --signature signature.bin $2
+python sphincs_wrapper.py --keygen 
+echo -e "Key generation complete.\n"
+python sphincs_wrapper.py --sign --input $1 --signature signature.bin $2
+echo -e "Signature generation complete.\n"
+python sphincs_wrapper.py --verify --input $1 --signature signature.bin $2
+echo -e "Signature verification complete.\n"
