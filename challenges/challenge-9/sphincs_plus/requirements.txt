@@ -1,1 +1,3 @@
 python-call-graph
+graphviz
+snakeviz
