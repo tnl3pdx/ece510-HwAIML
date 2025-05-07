@@ -27,34 +27,36 @@ START = (0, 0)
 WIN_STATE = (4, 4)
 HOLE_STATE = [(1,0),(3,1),(4,2),(1,3)]
 
-def fixed_mul(x, y, Fshift):
-    """Multiply fixed-point representations of x and y, returning
-    a fixed-point representation of the result."""
-    return (x * y) >> Fshift
-
-
-def to_fixed(x, Fshift):
-    """Convert a floating point input to the nearest fixed-point representation."""
-    return int(x * (1 << Fshift))
-
-
-def to_float(x, Fshift):
-    """Convert a fixed-point input to the nearest floating-point representation."""
-    return int(x) / float(1 << Fshift)
-
 @hdl.block
-def q_update(alpha, gamma, Q1, Q2, reward, updateOut):
-    
-    alpha_fix = hdl
+def q_update(alpha, gamma, Q1, Q2, reward, updateOut, Fshift=5):
+    """
+    Ensure that `updateOut` is a properly defined hdl.Signal with sufficient bit-width
+    to hold the result of the fixed-point arithmetic.
+    """
     
     @hdl.always_comb
     def logic():
-        scale = 1000
-        scaled_alpha = alpha / scale
-        scaled_gamma = gamma / scale
-        updateOut.next = (1-alpha)*Q1 + alpha*(reward + gamma*Q2)
-    return logic
+        # Convert to fixed-point
+        alpha_fixed = (alpha * (1 << Fshift))
+        gamma_fixed = (gamma * (1 << Fshift))
+        reward_fixed = (reward * (1 << Fshift))
+        q_current_fixed = (Q1 * (1 << Fshift))
+        q_next_fixed = (Q2 * (1 << Fshift))
+
+        print(f"alpha_fixed: {alpha_fixed}, gamma_fixed: {gamma_fixed}, reward_fixed: {reward_fixed}, q_current_fixed: {q_current_fixed}, q_next_fixed: {q_next_fixed}")
+
+        # Perform the Q-value update in fixed-point arithmetic
+        temp1 = (1 << Fshift) - alpha_fixed  # (1 - alpha)
+        temp2 = (reward_fixed + (gamma_fixed * q_next_fixed))  # reward + gamma * Q_next
+        q_value_fixed = ((temp1 * q_current_fixed)) + ((alpha_fixed * temp2))
         
+        print(f"temp1: {temp1}, temp2: {temp2}, q_value_fixed: {q_value_fixed}")
+
+        # Ensure the result fits within the bit-width of updateOut
+        updateOut.next = q_value_fixed
+        print(f"updateOut.next: {updateOut.next}")
+        
+    return logic
 
 #class state defines the board and decides reward, end and next position
 class State:
@@ -173,6 +175,7 @@ class Agent:
     #Q-learning Algorithm
     def Q_Learning(self,episodes):
         x = 0
+        adjust = 1 << 10
         #iterate through best path for each episode
         while(x < episodes):
             #check if state is end
@@ -206,21 +209,38 @@ class Agent:
                 
                 #iterate through actions to find max Q value for action based on next state action
                 for a in self.actions:
-                    nxtStateAction = (next_state[0], next_state[1], a)
+                    nxtStateAction = (next_state[0], next_state[1], a)      
+                    print(f"Indicies {nxtStateAction}/{(i, j, action)}")     
                     
-                    alpha = hdl.Signal(hdl.intbv(int(self.alpha * 1000))[16:])
-                    gamma = hdl.Signal(hdl.intbv(int(self.gamma * 1000))[16:])
-                    reward_signal = hdl.Signal(hdl.intbv(reward)[16:])
-                    q_current = hdl.Signal(hdl.intbv(self.Q[(i, j, action)])[16:])
-                    q_next = hdl.Signal(hdl.intbv(self.Q[nxtStateAction])[16:])
-                    q_value_signal = hdl.Signal(hdl.intbv(0)[16:])
+                    print(f"Alpha: {self.alpha}, Gamma: {self.gamma}, Reward: {reward}, Q_current: {self.Q[(i, j, action)]}, Q_next: {self.Q[nxtStateAction]}")
                     
-                    q_update(alpha, gamma, q_current, q_next, reward_signal, q_value_signal)
+                    # Define signals for MyHDL as signed numbers
+                    alpha_signal = hdl.Signal(hdl.intbv(int(self.alpha * adjust), min=-2**31, max=2**31))
+                    gamma_signal = hdl.Signal(hdl.intbv(int(self.gamma * adjust), min=-2**31, max=2**31))
+                    reward_signal = hdl.Signal(hdl.intbv(int(reward * adjust), min=-2**31, max=2**31))
+                    q_current_signal = hdl.Signal(hdl.intbv(int(self.Q[(i, j, action)] * adjust), min=-2**31, max=2**31))
+                    q_next_signal = hdl.Signal(hdl.intbv(int(self.Q[nxtStateAction] * adjust), min=-2**31, max=2**31))
+                    q_value_signal = hdl.Signal(hdl.intbv(0, min=-2**31, max=2**31), 1)
                     
-                    # Convert signal back to integer
-                    q_value = int(q_value_signal)
+                    # Print the signals for debugging
+                    print(f"alpha: {alpha_signal.val}, gamma: {gamma_signal.val}, reward: {reward_signal.val}, q_current: {q_current_signal.val}, q_next: {q_next_signal.val}, q_value: {q_value_signal.val}")
+
+                    # Instantiate the MyHDL block
+                    q_update_inst = q_update(alpha_signal, gamma_signal, q_current_signal, q_next_signal, reward_signal, q_value_signal)
+
+                    # Simulate the HDL block
+                    q_update_inst.run_sim(quiet=0, duration=1)
                     
-                    print(q_value)
+                    
+                    print(f"Q-value update Final: {q_value_signal.val}")
+                    
+                    # Convert the result back to float
+                    q_value = int(q_value_signal.val/adjust) / adjust
+                    
+                    q_update_inst.quit_sim()
+                    
+                    print(f"Q-value update after Conversion: {q_value}\n")
+                    
                     
                     #find largest Q value
                     if q_value >= mx_nxt_value:
@@ -265,7 +285,7 @@ class Agent:
 if __name__ == "__main__":
     #create agent for 10,000 episdoes implementing a Q-learning algorithm plot and show values.
     ag = Agent()
-    episodes = 10000
+    episodes = 100000
     ag.Q_Learning(episodes)
     ag.plot(episodes)
     ag.showValues()
