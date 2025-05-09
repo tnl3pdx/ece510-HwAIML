@@ -162,6 +162,8 @@ class Agent:
                 #set rewards to zero and iterate to next episode
                 self.rewards = 0
                 x+=1
+                
+                print(f"Episode {x} Finished")
             else:
                 #set to arbitrary low value to compare net state actions
                 mx_nxt_value = -10
@@ -175,8 +177,11 @@ class Agent:
                 #iterate through actions to find max Q value for action based on next state action
                 for a in self.actions:
                     nxtStateAction = (next_state[0], next_state[1], a)
+
                     q_value = (1-self.alpha)*self.Q[(i,j,action)] + self.alpha*(reward + self.gamma*self.Q[nxtStateAction])
                 
+                    #print('Q value:',q_value)
+
                     #find largest Q value
                     if q_value >= mx_nxt_value:
                         mx_nxt_value = q_value
@@ -221,7 +226,7 @@ class Agent:
 if __name__ == "__main__":
     #create agent for 10,000 episdoes implementing a Q-learning algorithm plot and show values.
     ag = Agent()
-    episodes = 100000
+    episodes = 10000
     ag.Q_Learning(episodes)
     ag.plot(episodes)
     ag.showValues()

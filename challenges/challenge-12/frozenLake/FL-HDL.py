@@ -14,7 +14,9 @@ Addition of MyHDL hardware integration for Q learning algorithm
 import numpy as np
 import random
 import matplotlib.pyplot as plt
-import myhdl as hdl
+from myhdl import block, Signal, intbv, always_comb, instance, delay
+from copy import copy
+import argparse
 
 
 
@@ -27,36 +29,67 @@ START = (0, 0)
 WIN_STATE = (4, 4)
 HOLE_STATE = [(1,0),(3,1),(4,2),(1,3)]
 
-@hdl.block
-def q_update(alpha, gamma, Q1, Q2, reward, updateOut, Fshift=5):
+global debug
+
+@block
+def q_update(alpha, gamma, Q1, Q2, reward, updateOut, Fshift=20):
     """
     Ensure that `updateOut` is a properly defined hdl.Signal with sufficient bit-width
     to hold the result of the fixed-point arithmetic.
     """
     
-    @hdl.always_comb
+    @always_comb
     def logic():
-        # Convert to fixed-point
-        alpha_fixed = (alpha * (1 << Fshift))
-        gamma_fixed = (gamma * (1 << Fshift))
-        reward_fixed = (reward * (1 << Fshift))
-        q_current_fixed = (Q1 * (1 << Fshift))
-        q_next_fixed = (Q2 * (1 << Fshift))
-
-        print(f"alpha_fixed: {alpha_fixed}, gamma_fixed: {gamma_fixed}, reward_fixed: {reward_fixed}, q_current_fixed: {q_current_fixed}, q_next_fixed: {q_next_fixed}")
-
-        # Perform the Q-value update in fixed-point arithmetic
-        temp1 = (1 << Fshift) - alpha_fixed  # (1 - alpha)
-        temp2 = (reward_fixed + (gamma_fixed * q_next_fixed))  # reward + gamma * Q_next
-        q_value_fixed = ((temp1 * q_current_fixed)) + ((alpha_fixed * temp2))
-        
-        print(f"temp1: {temp1}, temp2: {temp2}, q_value_fixed: {q_value_fixed}")
-
-        # Ensure the result fits within the bit-width of updateOut
-        updateOut.next = q_value_fixed
-        print(f"updateOut.next: {updateOut.next}")
-        
+        # Perform fixed-point arithmetic
+        temp1 = (1 << Fshift) - alpha
+        temp2 = reward + ((gamma * Q2) >> Fshift)
+        updateOut.next = (((temp1 * Q1) >> Fshift) + ((alpha * temp2) >> Fshift))
     return logic
+
+@block
+def testbench(alpha, gamma, q_current, q_next, reward, n, outputCopy, exp=31):
+    # Define MyHDL signals
+    alpha_signal = Signal(intbv(0, min=-2**exp, max=2**exp))
+    gamma_signal = Signal(intbv(0, min=-2**exp, max=2**exp))
+    q_current_signal = Signal(intbv(0, min=-2**exp, max=2**exp))
+    q_next_signal = Signal(intbv(0, min=-2**exp, max=2**exp))
+    reward_signal = Signal(intbv(0, min=-2**exp, max=2**exp))
+    output = Signal(intbv(0, min=-2**exp, max=2**exp))
+    
+    q_update_inst = q_update(alpha_signal, gamma_signal, q_current_signal, 
+                            q_next_signal, reward_signal, output, n)
+    
+    @instance
+    def stimulus():
+        if (args.debug):
+            print("Before Q Update")
+            print("alpha:", alpha_signal)
+            print("gamma:", gamma_signal)
+            print("reward:", reward_signal)
+            print("q_current_signal:", q_current_signal)
+            print("q_next_signal:", q_next_signal)
+        
+        # Set input signals
+        alpha_signal.next = alpha
+        gamma_signal.next = gamma
+        reward_signal.next = reward
+        q_current_signal.next = q_current
+        q_next_signal.next = q_next
+        yield delay(1)
+        
+        if (args.debug):
+            print("After Q Update")
+            print("alpha:", alpha_signal)
+            print("gamma:", gamma_signal)
+            print("reward:", reward_signal)
+            print("q_current_signal:", q_current_signal)
+            print("q_next_signal:", q_next_signal)
+            print("output:", output)
+            print(f"Output (In Sim): {int(output)/(1 << n)}")
+        
+        outputCopy[0] = output.val
+        
+    return stimulus, q_update_inst
 
 #class state defines the board and decides reward, end and next position
 class State:
@@ -175,7 +208,11 @@ class Agent:
     #Q-learning Algorithm
     def Q_Learning(self,episodes):
         x = 0
-        adjust = 1 << 10
+        
+        n = 10
+        scale = 1 << n
+        exp = 15
+        
         #iterate through best path for each episode
         while(x < episodes):
             #check if state is end
@@ -197,6 +234,9 @@ class Agent:
                 #set rewards to zero and iterate to next episode
                 self.rewards = 0
                 x+=1
+                
+                if (args.showepisodes and not args.debug):
+                    print(f"Episode {x} Finished")
             else:
                 #set to arbitrary low value to compare net state actions
                 mx_nxt_value = -10
@@ -208,43 +248,39 @@ class Agent:
                 self.rewards +=reward
                 
                 #iterate through actions to find max Q value for action based on next state action
+
+                outputCopy = [0]
+                
                 for a in self.actions:
                     nxtStateAction = (next_state[0], next_state[1], a)      
-                    print(f"Indicies {nxtStateAction}/{(i, j, action)}")     
+                    #print(f"Indicies {nxtStateAction}/{(i, j, action)}")     
                     
-                    print(f"Alpha: {self.alpha}, Gamma: {self.gamma}, Reward: {reward}, Q_current: {self.Q[(i, j, action)]}, Q_next: {self.Q[nxtStateAction]}")
+                    if (args.debug):
+                        print(f"\n\nAlpha: {self.alpha}, Gamma: {self.gamma}, Reward: {reward}, Q_current: {self.Q[(i, j, action)]}, Q_next: {self.Q[nxtStateAction]}")
                     
-                    # Define signals for MyHDL as signed numbers
-                    alpha_signal = hdl.Signal(hdl.intbv(int(self.alpha * adjust), min=-2**31, max=2**31))
-                    gamma_signal = hdl.Signal(hdl.intbv(int(self.gamma * adjust), min=-2**31, max=2**31))
-                    reward_signal = hdl.Signal(hdl.intbv(int(reward * adjust), min=-2**31, max=2**31))
-                    q_current_signal = hdl.Signal(hdl.intbv(int(self.Q[(i, j, action)] * adjust), min=-2**31, max=2**31))
-                    q_next_signal = hdl.Signal(hdl.intbv(int(self.Q[nxtStateAction] * adjust), min=-2**31, max=2**31))
-                    q_value_signal = hdl.Signal(hdl.intbv(0, min=-2**31, max=2**31), 1)
-                    
-                    # Print the signals for debugging
-                    print(f"alpha: {alpha_signal.val}, gamma: {gamma_signal.val}, reward: {reward_signal.val}, q_current: {q_current_signal.val}, q_next: {q_next_signal.val}, q_value: {q_value_signal.val}")
-
-                    # Instantiate the MyHDL block
-                    q_update_inst = q_update(alpha_signal, gamma_signal, q_current_signal, q_next_signal, reward_signal, q_value_signal)
-
-                    # Simulate the HDL block
-                    q_update_inst.run_sim(quiet=0, duration=1)
+                    falpha = int(self.alpha * scale)
+                    fgamma = int(self.gamma * scale)
+                    freward = int(reward * scale)
+                    fq_current_signal = int(self.Q[(i, j, action)] * scale)  # Convert Q value to fixed-point
+                    fq_next_signal = int(self.Q[nxtStateAction] * scale)  # Convert Q value to fixed-point
                     
                     
-                    print(f"Q-value update Final: {q_value_signal.val}")
+                    tb = testbench(falpha, fgamma, fq_current_signal, fq_next_signal, freward, n, outputCopy, exp)
+                    
+                    tb.run_sim(quiet = 1 if not args.debug else 0)
                     
                     # Convert the result back to float
-                    q_value = int(q_value_signal.val/adjust) / adjust
+                    q_value = int(outputCopy[0]) / scale  # Convert fixed-point back to float
                     
-                    q_update_inst.quit_sim()
-                    
-                    print(f"Q-value update after Conversion: {q_value}\n")
-                    
-                    
+                    if (args.debug):
+                        print(f"Q_value: {q_value} outputSig: {outputCopy[0]}")
+  
                     #find largest Q value
                     if q_value >= mx_nxt_value:
                         mx_nxt_value = q_value
+                        
+                    tb.quit_sim()
+                        
                 
                 #next state is now current state, check if end state
                 self.State = State(state=next_state)
@@ -256,8 +292,11 @@ class Agent:
             
             #copy new Q values to Q table
             self.Q = self.new_Q.copy()
+            
         #print final Q table output
         print(self.Q)
+        
+        
         
     #plot the reward vs episodes
     def plot(self,episodes):
@@ -281,11 +320,20 @@ class Agent:
             print(out)
         print('-----------------------------------------------')
         
-        
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Frozen Lake Q-learning')
+    parser.add_argument('--episodes', type=int, default=10000, help='Number of episodes to run')
+    parser.add_argument('-d', '--debug', action='store_true', help='Enable debug mode')  
+    parser.add_argument('-se', '--showepisodes', action='store_true', help='Show episodes')
+    args = parser.parse_args()
+    
     #create agent for 10,000 episdoes implementing a Q-learning algorithm plot and show values.
     ag = Agent()
-    episodes = 100000
+    episodes = args.episodes
+    if args.debug:
+        print("Debug mode enabled")
+        print(f"Number of episodes: {episodes}")
     ag.Q_Learning(episodes)
     ag.plot(episodes)
     ag.showValues()
