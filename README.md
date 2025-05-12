@@ -2,7 +2,7 @@
 
 The repository contains challenge solutions for ECE 510 - Hardware In AI and ML. Each week, 1 challenge is attempted to see if a solution can be found using LLMs.
 
-Attempted Challenges (as of 4/25/2025):
+Attempted Challenges (as of 5/11/2025):
 - Challenge 5
 - Challenge 6
 - Challenge 7
