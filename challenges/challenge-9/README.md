@@ -6,16 +6,16 @@ This challenge will be a introduction into researching and choosing a final proj
 
 Before selecting this project, I tried to look into a RL-based PCB component placer program, but I faced several issues involving the code provided by the paper and training time in general. 
 
-My second attempt involved looking into RL racing training and optimizing the intensive functions using hardware, however the code was heavily reliant on libraries from SB3 which resulted in difficulty of determining what functions were the root bootnecks.
+My second attempt involved looking into RL racing training and optimizing the intensive functions using hardware, however the code was heavily reliant on libraries from SB3 which resulted in difficulty of determining what functions were the root bottlenecks.
 
 These are detailed in the log.
 
 [Log for Challenge 9 (Old)](https://docs.google.com/document/d/19jQnhDfZXu6YweQI545uACPpJ-LIOy4y2dxP9cnUEXE/edit?usp=sharing)
-
+[Log for Challenge 9 (Current)](https://docs.google.com/document/d/1dr6SYWTulGCg-OQux4UQ53gXczKwLocVRnSrj2C98HI/edit?usp=sharing)
 
 ### Useful Links for SPHINCS+ resources:
 
-[Explaination of SPHINCS+](https://er4hn.info/blog/2023.12.16-sphincs_plus-step-by-step/)
+[Explanation of SPHINCS+](https://er4hn.info/blog/2023.12.16-sphincs_plus-step-by-step/)
 [Demo of SPHINCS+](https://asecuritysite.com/hashsig/sphincs01)
 
 ## Tasks for C9
