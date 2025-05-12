@@ -29,7 +29,8 @@ START = (0, 0)
 WIN_STATE = (4, 4)
 HOLE_STATE = [(1,0),(3,1),(4,2),(1,3)]
 
-global debug
+genCheck = False
+
 
 @block
 def q_update(alpha, gamma, Q1, Q2, reward, updateOut, Fshift=20):
@@ -48,6 +49,8 @@ def q_update(alpha, gamma, Q1, Q2, reward, updateOut, Fshift=20):
 
 @block
 def testbench(alpha, gamma, q_current, q_next, reward, n, outputCopy, exp=31):
+    global genCheck
+    
     # Define MyHDL signals
     alpha_signal = Signal(intbv(0, min=-2**exp, max=2**exp))
     gamma_signal = Signal(intbv(0, min=-2**exp, max=2**exp))
@@ -88,6 +91,11 @@ def testbench(alpha, gamma, q_current, q_next, reward, n, outputCopy, exp=31):
             print(f"Output (In Sim): {int(output)/(1 << n)}")
         
         outputCopy[0] = output.val
+        
+
+    if (not genCheck):
+        q_update_inst.convert(hdl='Verilog')
+        genCheck = True
         
     return stimulus, q_update_inst
 
