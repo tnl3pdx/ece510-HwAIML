@@ -7,7 +7,9 @@ Attempted Challenges (as of 4/25/2025):
 - Challenge 6
 - Challenge 7
 - Challenge 8
-- Challenge 9
+- Challenge 9  (Needs Cleanup)
+- Challenge 12 (Needs Cleanup)
+- Challenge 15 (WIP)
 
 Log Book Link: [Google Drive](https://drive.google.com/drive/folders/14qTbDQHp6gnZEJzkRY6MXAn2CLWChqG-?usp=sharing)
 
