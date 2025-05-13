@@ -11,12 +11,6 @@ module sha256_top (
     output logic [255:0] hash_out,
     output logic        hash_valid
 );
-
-    // Parameters
-    localparam MAX_MESSAGE_BYTES = 1024;  // Maximum message size (can be adjusted)
-    
-    // Memory buffer for the message
-    logic [7:0] message_buffer [0:MAX_MESSAGE_BYTES-1];
     
     // Control signals between modules
     logic        compression_busy;  // Indicates if compression is busy
@@ -38,7 +32,6 @@ module sha256_top (
         .data_valid(data_valid),
         .end_of_file(end_of_file),
         .busy(compression_busy),
-        .memory_buffer(message_buffer),
         .word_address(word_address),
         .req_word(req_word),
         .word_data(word_data),
@@ -87,7 +80,6 @@ module message_controller (
     input  logic        data_valid,
     input  logic        end_of_file,
     input  logic        busy,
-    ref    logic [7:0]  memory_buffer [],  // Reference to memory in top module
     input  logic [5:0]  word_address,
     input  logic        req_word,
     output logic [31:0] word_data,
@@ -96,6 +88,11 @@ module message_controller (
     output logic        ready,
     output logic        done
 );
+    // Parameters
+    localparam MAX_MESSAGE_BYTES = 1024;  // Maximum message size (can be adjusted)
+    
+    // Memory buffer for the message
+    logic [7:0] memory_buffer [0:MAX_MESSAGE_BYTES-1];
 
     // States
     typedef enum {
@@ -156,6 +153,7 @@ module message_controller (
                     if (padding_phase == 0) begin
                         // Append '1' bit (0x80)
                         memory_buffer[byte_count] <= 8'h80;
+                        bit_count <= bit_count + 8;
                         byte_count <= byte_count + 1;
                         padding_phase <= padding_phase + 1;
                     end else begin
@@ -163,6 +161,7 @@ module message_controller (
                         if ((byte_count % 64) != 56) begin
                             memory_buffer[byte_count] <= 8'h00;
                             byte_count <= byte_count + 1;
+                            bit_count <= bit_count + 8;
                         end
                     end
                 end
@@ -181,6 +180,7 @@ module message_controller (
                     endcase
                     
                     byte_count <= byte_count + 1;
+                    bit_count <= bit_count + 8;
                     length_phase <= length_phase + 1;
                 end
                 

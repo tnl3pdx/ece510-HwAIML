@@ -12,3 +12,12 @@
 *.pyc
 *.png
 my_profiles
+
+# HDL files
+*.do
+work
+*.mti
+*.mpf
+*.vvp
+*.wlf
+*.vcd

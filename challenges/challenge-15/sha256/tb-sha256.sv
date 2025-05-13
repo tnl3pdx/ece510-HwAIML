@@ -16,10 +16,12 @@ module tb_sha256();
     logic        hash_valid;
     
     // Test data
-    string test_message = "Hello, SHA-256!";
+    //string test_message = "Hello, SHA-256!";
+    string test_message = "YxwTU;Y.9?#Z8]]Tvs(DW?{R-1r6/V.}/qa,CH5Y[Fq6{z}&P{=-KH#,mig?+V;[K";
     int message_index;
     logic [255:0] received_hash;
     logic hash_received;
+    bit [255:0] expected_hash = 256'hd0e8b8f11c98f369016eb2ed3c541e1f01382f9d5b3104c9ffd06b6175a46271;
     
     // Instantiate DUT
     sha256_top dut (
@@ -63,18 +65,18 @@ module tb_sha256();
         $display("Starting SHA-256 hash calculation of: %s", test_message);
         
         // Feed each character of the message
+        data_valid = 1;
         while (message_index < test_message.len()) begin
             @(posedge clk);
             data_in = test_message[message_index];
-            data_valid = 1;
             message_index++;
+            
             
             // Display bytes being sent
             $display("Sending byte: 0x%h ('%s')", data_in, string'(data_in));
         end
         
         // Signal end of message
-        @(posedge clk);
         end_of_file = 1;
         
         // One more cycle with valid data and end_of_file
@@ -101,12 +103,11 @@ module tb_sha256();
             $write("%02x", received_hash[255-i -: 8]);
         end
         $display("");
-        
         // Calculate expected hash for comparison (this is the actual expected hash for "Hello, SHA-256!")
         // You can obtain this from an online SHA-256 calculator or command line tools
-        bit [255:0] expected_hash = 256'hd0e8b8f11c98f369016eb2ed3c541e1f01382f9d5b3104c9ffd06b6175a46271;
         $display("Expected hash:    %h", expected_hash);
         
+        // Verify hash
         // Verify hash
         if (received_hash === expected_hash) begin
             $display("PASS: Hash matches expected value");
