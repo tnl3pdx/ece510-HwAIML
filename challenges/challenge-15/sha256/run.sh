@@ -30,7 +30,7 @@ if [ "${#SRC_FILES[@]}" -eq 0 ]; then
 fi
 
 # Compile with iverilog
-iverilog -o "$OUT" "${SRC_FILES[@]}"
+iverilog -g2012 -Wall -o "$OUT" "${SRC_FILES[@]}"
 if [ $? -ne 0 ]; then
     echo "Error: iverilog compilation failed."
     exit 3
