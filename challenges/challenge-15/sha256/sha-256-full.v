@@ -60,56 +60,8 @@ module sha256_top (
         .hash_valid(hash_valid)
     );
 
-endmodule
 
-// Message Buffer Module
-module sha256_message_buffer (
-    input wire clk,
-    input wire rst,
-    input wire [7:0] data_in,
-    input wire data_valid,
-    input wire end_of_file,
-    output reg [511:0] block_out,
-    output reg block_ready,
-    input wire parser_ready
-);
-    reg [5:0] byte_cnt;
-    reg [511:0] buffer;
-    reg collecting;
-    reg last_block;
 
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            byte_cnt <= 0;
-            buffer <= 0;
-            block_ready <= 0;
-            collecting <= 1;
-            last_block <= 0;
-        end else if (collecting) begin
-            if (data_valid) begin
-                buffer <= {buffer[503:0], data_in};
-                byte_cnt <= byte_cnt + 1;
-                if (byte_cnt == 63) begin
-                    block_out <= {buffer[503:0], data_in};
-                    block_ready <= 1;
-                    collecting <= 0;
-                end
-            end
-            if (end_of_file && byte_cnt != 0) begin
-                // Output partial block for padding
-                block_out <= buffer << (8 * (64 - byte_cnt));
-                block_ready <= 1;
-                collecting <= 0;
-                last_block <= 1;
-            end
-        end else if (block_ready && parser_ready) begin
-            block_ready <= 0;
-            buffer <= 0;
-            byte_cnt <= 0;
-            collecting <= !last_block;
-            last_block <= 0;
-        end
-    end
 endmodule
 
 // Pad and Parser Module
@@ -204,24 +156,40 @@ module sha256_compression (
     reg processing;
     reg [5:0] w_idx;
 
+    // Helper functions
     function [31:0] ROTR(input [31:0] x, input [4:0] n);
         ROTR = (x >> n) | (x << (32-n));
     endfunction
+
+    // Compression functions
+    // CHECKED
     function [31:0] Ch(input [31:0] x, input [31:0] y, input [31:0] z);
         Ch = (x & y) ^ (~x & z);
     endfunction
+
+    // CHECKED
     function [31:0] Maj(input [31:0] x, input [31:0] y, input [31:0] z);
         Maj = (x & y) ^ (x & z) ^ (y & z);
     endfunction
+
+    // CHECKED
     function [31:0] Sigma0(input [31:0] x);
         Sigma0 = ROTR(x,2) ^ ROTR(x,13) ^ ROTR(x,22);
     endfunction
+
+    // CHECKED
     function [31:0] Sigma1(input [31:0] x);
         Sigma1 = ROTR(x,6) ^ ROTR(x,11) ^ ROTR(x,25);
     endfunction
+
+    // Message schedule functions
+
+    // CHECKED
     function [31:0] sigma0(input [31:0] x);
         sigma0 = ROTR(x,7) ^ ROTR(x,18) ^ (x >> 3);
     endfunction
+
+    // CHECKED
     function [31:0] sigma1(input [31:0] x);
         sigma1 = ROTR(x,17) ^ ROTR(x,19) ^ (x >> 10);
     endfunction
