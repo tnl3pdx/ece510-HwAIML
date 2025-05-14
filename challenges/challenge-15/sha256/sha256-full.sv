@@ -3,11 +3,11 @@
 
 module sha256_top (
     input  logic        clk,
-    input  logic        rst_n,
-    input  logic [7:0]  data_in,
-    input  logic        data_valid,
-    input  logic        end_of_file,
-    output logic        ready,
+    input  logic        rst_n,          // Active low reset
+    input  logic [7:0]  data_in,        // Input data stream (8 bits)
+    input  logic        data_valid,     // Indicates valid data for data_in
+    input  logic        end_of_file,    // Indicates end of input data
+    output logic        ready,          // Indicates if 
     output logic [255:0] hash_out,
     output logic        hash_valid
 );
@@ -18,11 +18,11 @@ module sha256_top (
     logic [7:0]  num_blocks;        // Number of 512-bit blocks
     logic [7:0]  block_index;       // Current block index
     logic [5:0]  word_address;      // Address for word access
-    logic [31:0] word_data;         // Data for word access
-    logic        req_word;
-    logic        word_valid;
-    logic [255:0] internal_hash;
-    logic        hash_ready;
+    logic [63:0] word_data;         // Data for word access
+    logic        req_word;          // Request signal from compression loop
+    logic        word_valid;        // Indicates if word from message controller is valid
+    logic [255:0] internal_hash;    // Internal hash output from compression loop
+    logic        hash_ready;        // Indicates if hash is ready to be outputted
     
     // Message Controller instantiation
     message_controller mc (
@@ -34,6 +34,7 @@ module sha256_top (
         .busy(compression_busy),
         .word_address(word_address),
         .req_word(req_word),
+        .current_block(block_index),
         .word_data(word_data),
         .word_valid(word_valid),
         .num_blocks(num_blocks),
@@ -51,6 +52,7 @@ module sha256_top (
         .req_word(req_word),
         .word_data(word_data),
         .word_valid(word_valid),
+        .blockCount(block_index),
         .hash_out(internal_hash),
         .hash_valid(hash_ready),
         .busy(compression_busy)
@@ -80,9 +82,10 @@ module message_controller (
     input  logic        data_valid,
     input  logic        end_of_file,
     input  logic        busy,
-    input  logic [5:0]  word_address,
-    input  logic        req_word,
-    output logic [31:0] word_data,
+    input  logic [5:0]  word_address,   // Address from compression loop to read data
+    input  logic        req_word,       // Request signal from compression loop
+    input  logic [7:0]  current_block,
+    output logic [63:0] word_data,
     output logic        word_valid,
     output logic [7:0]  num_blocks,
     output logic        ready,
@@ -108,11 +111,13 @@ module message_controller (
     state_t state, next_state;
     
     // Internal registers
-    logic [63:0] bit_count;      // Count of bits in the message
-    logic [31:0] byte_count;     // Count of bytes in the message
-    logic [31:0] pad_byte_index; // Index for padding
-    logic [2:0]  padding_phase;  // Track padding progress
-    logic [2:0]  length_phase;   // Track length append progress
+    logic [63:0] bit_count;         // Count of bits in the message
+    logic [63:0] temp_msgLen;       // Temporary message length
+    logic [31:0] byte_count;        // Count of bytes in the message
+    logic [31:0] pad_byte_index;    // Index for padding
+    logic [2:0]  padding_phase;     // Track padding progress
+    logic [2:0]  length_phase;      // Track length append progress
+    logic [3:0]  block_section;     // Track block output section
     
     // State machine
     always_ff @(posedge clk or negedge rst_n) begin
@@ -126,6 +131,7 @@ module message_controller (
             num_blocks <= '0;
             ready <= 1'b1;
             done <= 1'b0;
+            block_section <= '0;
         end else begin
             state <= next_state;
             
@@ -139,6 +145,7 @@ module message_controller (
                     num_blocks <= '0;
                     ready <= 1'b1;
                     done <= 1'b0;
+                    block_section <= '0;
                 end
                 
                 RECEIVE: begin
@@ -156,6 +163,7 @@ module message_controller (
                         bit_count <= bit_count + 8;
                         byte_count <= byte_count + 1;
                         padding_phase <= padding_phase + 1;
+                        temp_msgLen <= bit_count;
                     end else begin
                         // Append '0's until 448 bits mod 512
                         if ((byte_count % 64) != 56) begin
@@ -169,14 +177,14 @@ module message_controller (
                 LENGTH_APPEND: begin
                     // Append message length as 64-bit big endian integer
                     case (length_phase)
-                        0: memory_buffer[byte_count] <= bit_count[63:56];
-                        1: memory_buffer[byte_count] <= bit_count[55:48];
-                        2: memory_buffer[byte_count] <= bit_count[47:40];
-                        3: memory_buffer[byte_count] <= bit_count[39:32];
-                        4: memory_buffer[byte_count] <= bit_count[31:24];
-                        5: memory_buffer[byte_count] <= bit_count[23:16];
-                        6: memory_buffer[byte_count] <= bit_count[15:8];
-                        7: memory_buffer[byte_count] <= bit_count[7:0];
+                        0: memory_buffer[byte_count] <= temp_msgLen[63:56];
+                        1: memory_buffer[byte_count] <= temp_msgLen[55:48];
+                        2: memory_buffer[byte_count] <= temp_msgLen[47:40];
+                        3: memory_buffer[byte_count] <= temp_msgLen[39:32];
+                        4: memory_buffer[byte_count] <= temp_msgLen[31:24];
+                        5: memory_buffer[byte_count] <= temp_msgLen[23:16];
+                        6: memory_buffer[byte_count] <= temp_msgLen[15:8];
+                        7: memory_buffer[byte_count] <= temp_msgLen[7:0];
                     endcase
                     
                     byte_count <= byte_count + 1;
@@ -192,6 +200,7 @@ module message_controller (
                 READY: begin
                     ready <= 1'b0;
                     done <= 1'b1;
+                    padding_phase <= '0;
                 end
                 
                 PROVIDE_DATA: begin
@@ -201,9 +210,14 @@ module message_controller (
                             memory_buffer[{word_address, 2'b00}],
                             memory_buffer[{word_address, 2'b00} + 1],
                             memory_buffer[{word_address, 2'b00} + 2],
-                            memory_buffer[{word_address, 2'b00} + 3]
+                            memory_buffer[{word_address, 2'b00} + 3],
+                            memory_buffer[{word_address, 2'b00} + 4],
+                            memory_buffer[{word_address, 2'b00} + 5],
+                            memory_buffer[{word_address, 2'b00} + 6],
+                            memory_buffer[{word_address, 2'b00} + 7]
                         };
                         word_valid <= 1'b1;
+                        block_section <= block_section + 1;
                     end else begin
                         word_valid <= 1'b0;
                     end
@@ -226,7 +240,7 @@ module message_controller (
             end
             
             PADDING: begin
-                if (padding_phase > 0 && (byte_count % 64) == 56) 
+                if (padding_phase > 0 && (byte_count % 64) == 56)
                     next_state = LENGTH_APPEND;
             end
             
@@ -243,7 +257,13 @@ module message_controller (
             end
             
             PROVIDE_DATA: begin
-                if (busy && done) next_state = IDLE;
+                if ((block_section == 4'b1111) && busy && done) begin
+                    if (current_block < num_blocks) begin
+                        next_state = READY;
+                    end else begin
+                        next_state = IDLE;
+                    end
+                end 
             end
         endcase
     end
@@ -258,11 +278,12 @@ module compression_loop (
     input  logic [7:0]  num_blocks,
     output logic [5:0]  word_address,
     output logic        req_word,
-    input  logic [31:0] word_data,
+    input  logic [63:0] word_data,
     input  logic        word_valid,
-    output logic [255:0] hash_out,
-    output logic        hash_valid,
-    output logic        busy
+    output logic [7:0]  blockCount,
+    output logic [255:0] hash_out,      // Final hash output
+    output logic        hash_valid,     // Indicates hash is valid
+    output logic        busy            // Signal to indicate compression loop is busy
 );
 
     // SHA-256 Constants
@@ -307,8 +328,9 @@ module compression_loop (
     
     // Counters and control signals
     logic [7:0]  current_block;
-    logic [5:0]  schedule_counter;
+    logic [6:0]  schedule_counter;
     logic [6:0]  round_counter;
+    logic [2:0]  block_section;
     
     // Helper functions (implemented as functions to keep the code clean)
     function logic [31:0] ch(logic [31:0] x, logic [31:0] y, logic [31:0] z);
@@ -346,6 +368,7 @@ module compression_loop (
             round_counter <= '0;
             req_word <= 1'b0;
             word_address <= '0;
+            block_section <= '0;
             
             // Initialize hash values (first block)
             h0 <= 32'h6a09e667;
@@ -370,19 +393,21 @@ module compression_loop (
                 
                 LOAD_SCHEDULE: begin
                     if (!req_word && !word_valid) begin
-                        // Request next word
+                        // Request next dword
                         req_word <= 1'b1;
                         word_address <= current_block * 16 + schedule_counter;
                     end else if (req_word && word_valid) begin
-                        // Store received word
+                        // Store received word into two 32-bit words
+                        W[schedule_counter+1] <= {
+                            word_data[31:0]
+                        }; 
                         W[schedule_counter] <= {
-                            word_data[7:0],
-                            word_data[15:8],
-                            word_data[23:16],
-                            word_data[31:24]
-                        }; // Convert from memory (little endian) to big endian
+                            word_data[63:32]
+                        }; 
+                        
+                        // Convert from memory (little endian) to big endian
                         req_word <= 1'b0;
-                        schedule_counter <= schedule_counter + 1;
+                        schedule_counter <= schedule_counter + 2;
                     end
                 end
                 
@@ -401,21 +426,25 @@ module compression_loop (
                         a <= h0; b <= h1; c <= h2; d <= h3;
                         e <= h4; f <= h5; g <= h6; h <= h7;
                         round_counter <= round_counter + 1;
+                    end else if (round_counter >= 65) begin
+                        busy <= 1'b0;
                     end else begin
                         // Perform compression round
                         logic [31:0] temp1, temp2;
                         temp1 = h + sigma1(e) + ch(e, f, g) + K[round_counter-1] + W[round_counter-1];
                         temp2 = sigma0(a) + maj(a, b, c);
                         
-                        h <= g;
-                        g <= f;
-                        f <= e;
-                        e <= d + temp1;
-                        d <= c;
-                        c <= b;
-                        b <= a;
-                        a <= temp1 + temp2;
-                        
+                        if (round_counter <= 64) begin
+                            h <= g;
+                            g <= f;
+                            f <= e;
+                            e <= d + temp1;
+                            d <= c;
+                            c <= b;
+                            b <= a;
+                            a <= temp1 + temp2;
+                        end
+
                         round_counter <= round_counter + 1;
                     end
                 end
@@ -440,6 +469,8 @@ module compression_loop (
             endcase
         end
     end
+
+    assign blockCount = current_block;
     
     // Next state logic
     always_comb begin

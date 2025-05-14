@@ -3,7 +3,7 @@
 
 module tb_sha256();
     // Parameters
-    parameter CLK_PERIOD = 10; // 10ns = 100MHz clock
+    parameter CLK_PERIOD = 5;    // 200 MHz clock
     
     // DUT Signals
     logic        clk;
@@ -16,12 +16,17 @@ module tb_sha256();
     logic        hash_valid;
     
     // Test data
-    //string test_message = "Hello, SHA-256!";
-    string test_message = "YxwTU;Y.9?#Z8]]Tvs(DW?{R-1r6/V.}/qa,CH5Y[Fq6{z}&P{=-KH#,mig?+V;[K";
+    //string test_message = "YxwTU;Y.9?#Z8]]Tvs(DW?{R-1r6/V.}/qa,CH5Y[Fq6{z}&P{=-KHkk";
+    //bit [255:0] expected_hash = 256'h2b9a7bd7ff27dbc3031b4d236dd58604411ef5e16d0324226ab360c9b3cf3818;
+    string test_message = "YxwTU;Y.9?#Z8]]Tvs(DW?{R-1r6/V.}/qa,CH5Y[Fq6{z}&P{=-KHkkssssssssssssssssssssssssssdddawadddddddddddddddddddddddddddddddddwd";
+    bit [255:0] expected_hash = 256'h03aecb55e5fca4a2154fe712b6fd25ab53d49d0a67483ffae13525e8946f3899;
+;
+    //string test_message = "YxwTU;Y.9?#";
+    //bit [255:0] expected_hash = 256'hc21919e5b04c8a06164b68bd57293a97c7ef18d7371feea68f3872cdcb23b743;
     int message_index;
     logic [255:0] received_hash;
     logic hash_received;
-    bit [255:0] expected_hash = 256'hd0e8b8f11c98f369016eb2ed3c541e1f01382f9d5b3104c9ffd06b6175a46271;
+    
     
     // Instantiate DUT
     sha256_top dut (
@@ -88,7 +93,7 @@ module tb_sha256();
         while (!hash_valid) begin
             @(posedge clk);
         end
-        
+
         // Store the received hash
         received_hash = hash_out;
         hash_received = 1;
