@@ -4,12 +4,13 @@
 module sha256_top (
     input  logic        clk,
     input  logic        rst_n,          // Active low reset
+    input  logic        enable,         // Enable signal
     input  logic [7:0]  data_in,        // Input data stream (8 bits)
     input  logic        data_valid,     // Indicates valid data for data_in
     input  logic        end_of_file,    // Indicates end of input data
-    output logic        ready,          // Indicates if 
-    output logic [255:0] hash_out,
-    output logic        hash_valid
+    output logic        ready,          // Indicates if SHA-256 is ready to accept data
+    output logic [255:0] hash_out,      // Final hash output (256 bits)
+    output logic        hash_valid      // Indicates hash output is valid
 );
     
     // Control signals between modules
@@ -39,7 +40,8 @@ module sha256_top (
         .word_valid(word_valid),
         .num_blocks(num_blocks),
         .ready(ready),
-        .done(mc_done)
+        .done(mc_done),
+        .enable(enable)
     );
     
     // Compression loop instantiation
@@ -55,7 +57,8 @@ module sha256_top (
         .blockCount(block_index),
         .hash_out(internal_hash),
         .hash_valid(hash_ready),
-        .busy(compression_busy)
+        .busy(compression_busy),
+        .enable(enable)
     );
     
     // Output hash when valid
@@ -76,23 +79,24 @@ endmodule
 
 // Message Controller Module
 module message_controller (
-    input  logic        clk,
-    input  logic        rst_n,
-    input  logic [7:0]  data_in,
-    input  logic        data_valid,
-    input  logic        end_of_file,
-    input  logic        busy,
+    input  logic        clk,            // Clock signal
+    input  logic        rst_n,          // Active low reset
+    input  logic [7:0]  data_in,        // Input data stream (8 bits)
+    input  logic        data_valid,     // Indicates valid data for data_in
+    input  logic        end_of_file,    // Indicates end of input data
+    input  logic        busy,           // Incoming busy signal from compression loop
     input  logic [5:0]  word_address,   // Address from compression loop to read data
     input  logic        req_word,       // Request signal from compression loop
-    input  logic [7:0]  current_block,
-    output logic [63:0] word_data,
-    output logic        word_valid,
-    output logic [7:0]  num_blocks,
-    output logic        ready,
-    output logic        done
+    input  logic [7:0]  current_block,  // Current block index
+    input  logic        enable,         // Enable signal for message controller
+    output logic [63:0] word_data,      // Data to be sent to compression loop
+    output logic        word_valid,     // Indicates if word from message controller is valid
+    output logic [7:0]  num_blocks,     // Number of 512-bit blocks
+    output logic        ready,          // Indicates if SHA-256 is ready to accept data
+    output logic        done            // Indicates if message controller is done processing all blocks
 );
     // Parameters
-    localparam MAX_MESSAGE_BYTES = 1024;  // Maximum message size (can be adjusted)
+    localparam MAX_MESSAGE_BYTES = 512;  // Maximum message size (can be adjusted)
     
     // Memory buffer for the message
     logic [7:0] memory_buffer [0:MAX_MESSAGE_BYTES-1];
@@ -129,9 +133,10 @@ module message_controller (
             padding_phase <= '0;
             length_phase <= '0;
             num_blocks <= '0;
-            ready <= 1'b1;
+            ready <= 1'b0;
             done <= 1'b0;
             block_section <= '0;
+            temp_msgLen <= '0;
         end else begin
             state <= next_state;
             
@@ -198,7 +203,7 @@ module message_controller (
                 end
                 
                 READY: begin
-                    ready <= 1'b0;
+                    // ready <= 1'b0;
                     done <= 1'b1;
                     padding_phase <= '0;
                 end
@@ -232,7 +237,7 @@ module message_controller (
         
         case (state)
             IDLE: begin
-                if (data_valid) next_state = RECEIVE;
+                if (data_valid && enable) next_state = RECEIVE;
             end
             
             RECEIVE: begin
@@ -258,7 +263,7 @@ module message_controller (
             
             PROVIDE_DATA: begin
                 if ((block_section == 4'b1111) && busy && done) begin
-                    if (current_block < num_blocks) begin
+                    if (current_block + 1 < num_blocks) begin
                         next_state = READY;
                     end else begin
                         next_state = IDLE;
@@ -272,15 +277,16 @@ endmodule
 
 // Compression Loop Module
 module compression_loop (
-    input  logic        clk,
-    input  logic        rst_n,
-    input  logic        start,
-    input  logic [7:0]  num_blocks,
-    output logic [5:0]  word_address,
-    output logic        req_word,
-    input  logic [63:0] word_data,
-    input  logic        word_valid,
-    output logic [7:0]  blockCount,
+    input  logic        clk,            // Clock signal
+    input  logic        rst_n,          // Active low reset
+    input  logic        start,          // Start signal from message controller
+    input  logic [7:0]  num_blocks,     // Number of 512-bit blocks
+    output logic [5:0]  word_address,   // Address for word access
+    output logic        req_word,       // Request signal for word data
+    input  logic [63:0] word_data,      // Data from message controller
+    input  logic        word_valid,     // Indicates if word from message controller is valid
+    input  logic        enable,         // Enable signal for compression loop
+    output logic [7:0]  blockCount,     // Current block index
     output logic [255:0] hash_out,      // Final hash output
     output logic        hash_valid,     // Indicates hash is valid
     output logic        busy            // Signal to indicate compression loop is busy
@@ -458,6 +464,7 @@ module compression_loop (
                     schedule_counter <= '0;
                     round_counter <= '0;
                     current_block <= current_block + 1;
+                    busy <= 1'b1;
                 end
                 
                 FINALIZE: begin
@@ -478,7 +485,7 @@ module compression_loop (
         
         case (state)
             IDLE: begin
-                if (start) next_state = LOAD_SCHEDULE;
+                if (start && enable) next_state = LOAD_SCHEDULE;
             end
             
             LOAD_SCHEDULE: begin
