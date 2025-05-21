@@ -89,7 +89,7 @@ module message_controller (
     input  logic        req_word,       // Request signal from compression loop
     input  logic [7:0]  current_block,  // Current block index
     input  logic        enable,         // Enable signal for message controller
-    output logic [63:0] word_data,      // Data to be sent to compression loop
+    output logic [63:0] word_d2ata,      // Data to be sent to compression loop
     output logic        word_valid,     // Indicates if word from message controller is valid
     output logic [7:0]  num_blocks,     // Number of 512-bit blocks
     output logic        ready,          // Indicates if SHA-256 is ready to accept data
@@ -290,6 +290,10 @@ module compression_loop (
 );
 
     // SHA-256 Constants
+    logic [5:0] kSel;
+    logic [31:0] kBus;
+
+    /*
     logic [31:0] K [0:63] = '{
         32'h428a2f98, 32'h71374491, 32'hb5c0fbcf, 32'he9b5dba5,
         32'h3956c25b, 32'h59f111f1, 32'h923f82a4, 32'hab1c5ed5,
@@ -308,6 +312,7 @@ module compression_loop (
         32'h748f82ee, 32'h78a5636f, 32'h84c87814, 32'h8cc70208,
         32'h90befffa, 32'ha4506ceb, 32'hbef9a3f7, 32'hc67178f2
     };
+    */
 
     // States
     typedef enum logic [3:0] {
@@ -333,6 +338,9 @@ module compression_loop (
     logic [6:0]  schedule_counter;
     logic [6:0]  round_counter;
     logic [2:0]  block_section;
+
+    // Temporary variables for compression
+    logic [31:0] temp1, temp2;
     
     // Helper functions (implemented as functions to keep the code clean)
     function logic [31:0] ch(logic [31:0] x, logic [31:0] y, logic [31:0] z);
@@ -358,6 +366,77 @@ module compression_loop (
     function logic [31:0] sigma_1(logic [31:0] x);
         return {x[16:0], x[31:17]} ^ {x[18:0], x[31:19]} ^ (x >> 10);
     endfunction
+
+    // LUT
+    always_comb begin
+        case (kSel)
+            0: kBus <= 32'h428a2f98;
+            1: kBus <= 32'h71374491;
+            2: kBus <= 32'hb5c0fbcf;
+            3: kBus <= 32'he9b5dba5;
+            4: kBus <= 32'h3956c25b;
+            5: kBus <= 32'h59f111f1;
+            6: kBus <= 32'h923f82a4;
+            7: kBus <= 32'hab1c5ed5;
+            8: kBus <= 32'hd807aa98;
+            9: kBus <= 32'h12835b01;
+            10: kBus <= 32'h243185be;
+            11: kBus <= 32'h550c7dc3;
+            12: kBus <= 32'h72be5d74;
+            13: kBus <= 32'h80deb1fe;
+            14: kBus <= 32'h9bdc06a7;
+            15: kBus <= 32'hc19bf174;
+            16: kBus <= 32'he49b69c1;
+            17: kBus <= 32'hefbe4786;
+            18: kBus <= 32'h0fc19dc6;
+            19: kBus <= 32'h240ca1cc;
+            20: kBus <= 32'h2de92c6f;
+            21: kBus <= 32'h4a7484aa;
+            22: kBus <= 32'h5cb0a9dc;
+            23: kBus <= 32'h76f988da;
+            24: kBus <= 32'h983e5152;
+            25: kBus <= 32'ha831c66d;
+            26: kBus <= 32'hb00327c8;
+            27: kBus <= 32'hbf597fc7;
+            28: kBus <= 32'hc6e00bf3;
+            29: kBus <= 32'hd5a79147;
+            30: kBus <= 32'h06ca6351;
+            31: kBus <= 32'h14292967;
+            32: kBus <= 32'h27b70a85;
+            33: kBus <= 32'h2e1b2138;
+            34: kBus <= 32'h4d2c6dfc;
+            35: kBus <= 32'h53380d13;
+            36: kBus <= 32'h650a7354;
+            37: kBus <= 32'h766a0abb;
+            38: kBus <= 32'h81c2c92e;
+            39: kBus <= 32'h92722c85;
+            40: kBus <= 32'ha2bfe8a1;
+            41: kBus <= 32'ha81a664b;
+            42: kBus <= 32'hc24b8b70;
+            43: kBus <= 32'hc76c51a3;
+            44: kBus <= 32'hd192e819;
+            45: kBus <= 32'hd6990624;
+            46: kBus <= 32'hf40e3585;
+            47: kBus <= 32'h106aa070;
+            48: kBus <= 32'h19a4c116;
+            49: kBus <= 32'h1e376c08;
+            50: kBus <= 32'h2748774c;
+            51: kBus <= 32'h34b0bcb5;
+            52: kBus <= 32'h391c0cb3;
+            53: kBus <= 32'h4ed8aa4a;
+            54: kBus <= 32'h5b9cca4f;
+            55: kBus <= 32'h682e6ff3;
+            56: kBus <= 32'h748f82ee;
+            57: kBus <= 32'h78a5636f;
+            58: kBus <= 32'h84c87814;
+            59: kBus <= 32'h8cc70208;
+            60: kBus <= 32'h90befffa;
+            61: kBus <= 32'ha4506ceb;
+            62: kBus <= 32'hbef9a3f7;
+            63: kBus <= 32'hc67178f2;
+            default: kBus <= 32'h00000000;
+        endcase
+    end
     
     // State machine
     always_ff @(posedge clk or negedge rst_n) begin
@@ -371,6 +450,7 @@ module compression_loop (
             req_word <= 1'b0;
             word_address <= '0;
             block_section <= '0;
+            kSel <= '0;
             
             // Initialize hash values (first block)
             h0 <= 32'h6a09e667;
@@ -430,12 +510,7 @@ module compression_loop (
                         round_counter <= round_counter + 1;
                     end else if (round_counter >= 65) begin
                         busy <= 1'b0;
-                    end else begin
-                        // Perform compression round
-                        logic [31:0] temp1, temp2;
-                        temp1 = h + sigma1(e) + ch(e, f, g) + K[round_counter-1] + W[round_counter-1];
-                        temp2 = sigma0(a) + maj(a, b, c);
-                        
+                    end else begin                      
                         if (round_counter <= 64) begin
                             h <= g;
                             g <= f;
@@ -445,6 +520,7 @@ module compression_loop (
                             c <= b;
                             b <= a;
                             a <= temp1 + temp2;
+                            kSel <= kSel + 1;
                         end
 
                         round_counter <= round_counter + 1;
@@ -459,6 +535,7 @@ module compression_loop (
                     // Reset counters for next block
                     schedule_counter <= '0;
                     round_counter <= '0;
+                    kSel <= '0;
                     current_block <= current_block + 1;
                     busy <= 1'b1;
                 end
@@ -475,6 +552,14 @@ module compression_loop (
 
     assign blockCount = current_block;
     
+
+    // Combinational logic for hash calculation
+    always_comb begin
+        // Perform calulation
+        temp1 = h + sigma1(e) + ch(e, f, g) + kBus + W[round_counter-1];
+        temp2 = sigma0(a) + maj(a, b, c);
+    end
+
     // Next state logic
     always_comb begin
         next_state = state;

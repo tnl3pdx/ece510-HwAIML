@@ -7,6 +7,7 @@ check_lvsdrc = True
 
 # Path to input data. Either binary file or hex.
 rom_data = "K_256byte.hex"
+
 # Format type of input data
 data_type = "hex"
 
