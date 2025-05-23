@@ -13,8 +13,10 @@ module msg_ram (
 	input wire [7:0] raddr;
 	output wire [31:0] rdata;
 	reg [7:0] mem [0:1023];
+	wire [9:0] raddr_aligned;
 	always @(posedge clk)
 		if (we)
 			mem[waddr] <= wdata;
-	assign rdata = {mem[raddr], mem[raddr + 1], mem[raddr + 2], mem[raddr + 3]};
+	assign raddr_aligned = {2'b00, raddr[7:0]};
+	assign rdata = {mem[raddr_aligned], mem[raddr_aligned + 1], mem[raddr_aligned + 2], mem[raddr_aligned + 3]};
 endmodule

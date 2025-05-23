@@ -33,7 +33,6 @@ module message_controller (
 	output reg done;
 	reg [31:0] state;
 	reg [31:0] next_state;
-	localparam MAX_MESSAGE_BYTES = 1024;
 	reg [12:0] bit_count;
 	reg [12:0] temp_msgLen;
 	reg [9:0] byte_count;
@@ -55,28 +54,28 @@ module message_controller (
 	always @(posedge clk or negedge rst_n)
 		if (!rst_n) begin
 			state <= 32'd0;
-			bit_count <= 1'sb0;
-			temp_msgLen <= 1'sb0;
-			byte_count <= 1'sb0;
-			padding_phase <= 1'sb0;
-			length_phase <= 1'sb0;
-			num_blocks <= 1'sb0;
+			bit_count <= 13'b0000000000000;
+			temp_msgLen <= 13'b0000000000000;
+			byte_count <= 10'b0000000000;
+			padding_phase <= 1'b0;
+			length_phase <= 3'b000;
+			num_blocks <= 8'b00000000;
+			block_section <= 4'b0000;
 			ready <= 1'b0;
 			done <= 1'b0;
-			block_section <= 1'sb0;
 		end
 		else begin
 			state <= next_state;
 			case (state)
 				32'd0: begin
-					bit_count <= 1'sb0;
-					byte_count <= 1'sb0;
-					padding_phase <= 1'sb0;
-					length_phase <= 1'sb0;
-					num_blocks <= 1'sb0;
+					bit_count <= 13'b0000000000000;
+					byte_count <= 10'b0000000000;
+					padding_phase <= 1'b0;
+					length_phase <= 3'b000;
+					num_blocks <= 8'b00000000;
 					ready <= 1'b1;
 					done <= 1'b0;
-					block_section <= 1'sb0;
+					block_section <= 4'b0000;
 				end
 				32'd1:
 					if (data_valid) begin
@@ -102,20 +101,21 @@ module message_controller (
 				32'd4: num_blocks <= (byte_count + 63) / 64;
 				32'd5: begin
 					done <= 1'b1;
-					padding_phase <= 1'sb0;
+					padding_phase <= 'b0;
 				end
 				32'd6:
 					if (req_word && word_valid)
 						block_section <= block_section + 1;
+				default: state <= 32'd0;
 			endcase
 		end
 	always @(*) begin
 		if (_sv2v_0)
 			;
 		enable_write = 1'b0;
-		read_addr = 1'sbz;
-		write_data = 1'sbz;
-		word_data = 32'h00000000;
+		read_addr = 8'bzzzzzzzz;
+		write_data = 8'bzzzzzzzz;
+		word_data = 32'b00000000000000000000000000000000;
 		word_valid = 1'b0;
 		if (state == 32'd1) begin
 			enable_write = 1'b1;
@@ -146,7 +146,6 @@ module message_controller (
 	always @(*) begin
 		if (_sv2v_0)
 			;
-		next_state = state;
 		case (state)
 			32'd0:
 				if (data_valid && enable)
@@ -171,6 +170,7 @@ module message_controller (
 					else
 						next_state = 32'd0;
 				end
+			default: next_state = state;
 		endcase
 	end
 	initial _sv2v_0 = 0;

@@ -67,12 +67,10 @@ module compression_loop (
 	reg [7:0] current_block;
 	reg [6:0] schedule_counter;
 	reg [6:0] round_counter;
-	reg [2:0] block_section;
 	reg [2:0] extend_phase;
 	reg [31:0] temp1;
 	reg [31:0] temp2;
 	reg [31:0] extend_W [0:3];
-	reg [31:0] compress_W;
 	function [31:0] ch;
 		input reg [31:0] x;
 		input reg [31:0] y;
@@ -106,13 +104,12 @@ module compression_loop (
 			state <= 4'd0;
 			busy <= 1'b0;
 			hash_valid <= 1'b0;
-			current_block <= 1'sb0;
-			schedule_counter <= 1'sb0;
-			round_counter <= 1'sb0;
+			current_block <= 8'b00000000;
+			schedule_counter <= 7'b0000000;
+			round_counter <= 7'b0000000;
 			req_word <= 1'b0;
-			block_section <= 1'sb0;
-			kSel <= 1'sb0;
-			extend_phase <= 1'sb0;
+			kSel <= 6'b000000;
+			extend_phase <= 3'b000;
 			h0 <= 32'h6a09e667;
 			h1 <= 32'hbb67ae85;
 			h2 <= 32'h3c6ef372;
@@ -129,7 +126,7 @@ module compression_loop (
 					if (start) begin
 						busy <= 1'b1;
 						hash_valid <= 1'b0;
-						current_block <= 1'sb0;
+						current_block <= 8'b00000000;
 					end
 				4'd1:
 					if (schedule_counter < 16) begin
@@ -148,7 +145,7 @@ module compression_loop (
 						3: extend_W[3] <= read_data;
 						4: begin
 							schedule_counter <= schedule_counter + 1;
-							extend_phase <= 1'sb0;
+							extend_phase <= 3'b000;
 						end
 					endcase
 				end
@@ -189,62 +186,61 @@ module compression_loop (
 					h5 <= h5 + f;
 					h6 <= h6 + g;
 					h7 <= h7 + h;
-					schedule_counter <= 1'sb0;
-					round_counter <= 1'sb0;
-					kSel <= 1'sb0;
+					schedule_counter <= 7'b0000000;
+					round_counter <= 7'b0000000;
+					kSel <= 6'b000000;
 					current_block <= current_block + 1;
 					busy <= 1'b1;
-					extend_phase <= 1'sb0;
+					extend_phase <= 3'b000;
 				end
 				4'd5: begin
 					hash_out <= {h0, h1, h2, h3, h4, h5, h6, h7};
 					hash_valid <= 1'b1;
 					busy <= 1'b0;
 				end
+				default: state <= 4'd0;
 			endcase
 		end
 	assign blockCount = current_block;
 	always @(*) begin
 		if (_sv2v_0)
 			;
-		temp1 = (((h + sigma1(e)) + ch(e, f, g)) + kBus) + compress_W;
+		temp1 = (((h + sigma1(e)) + ch(e, f, g)) + kBus) + read_data;
 		temp2 = sigma0(a) + maj(a, b, c);
 	end
 	always @(*) begin
 		if (_sv2v_0)
 			;
 		enable_write = 1'b0;
-		write_data = 'bz;
-		write_addr = 'bz;
-		read_addr = 'bz;
-		word_address = 'bz;
+		write_data = 32'bzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
+		write_addr = 6'bzzzzzz;
+		read_addr = 6'bzzzzzz;
+		word_address = 6'bzzzzzz;
 		if (state == 4'd1) begin
-			word_address = (current_block * 16) + schedule_counter;
-			write_addr = schedule_counter;
+			word_address = (current_block * 16) + {2'b00, schedule_counter[5:0]};
+			write_addr = schedule_counter[5:0];
 			if (word_valid)
 				enable_write = 1'b1;
 		end
 		else if (state == 4'd2)
 			case (extend_phase)
-				0: read_addr = schedule_counter - 2;
-				1: read_addr = schedule_counter - 7;
-				2: read_addr = schedule_counter - 15;
-				3: read_addr = schedule_counter - 16;
+				0: read_addr = schedule_counter[5:0] - 2;
+				1: read_addr = schedule_counter[5:0] - 7;
+				2: read_addr = schedule_counter[5:0] - 15;
+				3: read_addr = schedule_counter[5:0] - 16;
 				4: begin
 					enable_write = 1'b1;
 					write_data = ((sigma_1(extend_W[0]) + extend_W[1]) + sigma_0(extend_W[2])) + extend_W[3];
-					write_addr = schedule_counter;
+					write_addr = schedule_counter[5:0];
 				end
+				default: read_addr = 6'bzzzzzz;
 			endcase
-		else if (state == 4'd3) begin
-			read_addr = round_counter - 1;
-			compress_W = read_data;
-		end
+		else if (state == 4'd3)
+			read_addr = round_counter[5:0] - 1;
 	end
 	always @(*) begin
 		if (_sv2v_0)
 			;
-		next_state = state;
 		case (state)
 			4'd0:
 				if (start && enable)
@@ -264,6 +260,7 @@ module compression_loop (
 				else
 					next_state = 4'd1;
 			4'd5: next_state = 4'd0;
+			default: next_state = state;
 		endcase
 	end
 	initial _sv2v_0 = 0;
