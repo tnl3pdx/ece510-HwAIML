@@ -14,7 +14,8 @@ fi
 # Create output directory if it doesn't exist
 mkdir -p "$OUTPUT_DIR"
 
-for file in "$INPUT_DIR"/*.sv; do
-    base_name=$(basename "$file" .sv)
-    sv2v "$file" > "$OUTPUT_DIR/$base_name.v"
-done
+SV_FILES=("$INPUT_DIR"*.sv)
+
+echo ${SV_FILES[@]}
+
+sv2v --write=$OUTPUT_DIR ${SV_FILES[@]}

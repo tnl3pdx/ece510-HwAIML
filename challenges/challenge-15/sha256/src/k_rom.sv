@@ -69,7 +69,7 @@ module k_rom (
                 61: kBus = 32'ha4506ceb;
                 62: kBus = 32'hbef9a3f7;
                 63: kBus = 32'hc67178f2;
-            default: kBus <= 32'h00000000;
+            default: kBus = 32'h00000000;
         endcase
     end
 

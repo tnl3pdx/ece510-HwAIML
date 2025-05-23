@@ -35,13 +35,13 @@ module message_controller (
     state_t state, next_state;
 
     // Parameters
-    localparam MAX_MESSAGE_BYTES = 1024;  // Maximum message size (can be adjusted)
+    //localparam MAX_MESSAGE_BYTES = 1024;  // Maximum message size (can be adjusted)
     
 
     // Internal registers
-    logic [$clog2(MAX_MESSAGE_BYTES)+2:0]    bit_count;         // Counter of bits in the message
-    logic [$clog2(MAX_MESSAGE_BYTES)+2:0]    temp_msgLen;       // Counter for tracking message length
-    logic [$clog2(MAX_MESSAGE_BYTES)-1:0]     byte_count;        // Counter for bytes in the message
+    logic [12:0]    bit_count;         // Counter of bits in the message
+    logic [12:0]    temp_msgLen;       // Counter for tracking message length
+    logic [9:0]     byte_count;        // Counter for bytes in the message
     logic           padding_phase;     // Track padding progress
     logic [2:0]     length_phase;      // Track length append progress
     logic [3:0]     block_section;     // Track block output section
@@ -65,29 +65,29 @@ module message_controller (
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             state <= IDLE;
-            bit_count <= '0;
-            temp_msgLen <= '0;
-            byte_count <= '0;
-            padding_phase <= '0;
-            length_phase <= '0;
-            num_blocks <= '0;
+            bit_count <= 13'b0;
+            temp_msgLen <= 13'b0;
+            byte_count <= 10'b0;
+            padding_phase <= 1'b0;
+            length_phase <= 3'b0;
+            num_blocks <= 8'b0;
             ready <= 1'b0;
             done <= 1'b0;
-            block_section <= '0;
+            block_section <= 4'b0;
         end else begin
             state <= next_state;
             
             case (state)
                 // IDLE state: waiting for data
                 IDLE: begin
-                    bit_count <= '0;
-                    byte_count <= '0;
+                    bit_count <= 13'b0;
+                    byte_count <= 10'b0;
                     padding_phase <= '0;
-                    length_phase <= '0;
-                    num_blocks <= '0;
+                    length_phase <= 3'b0;
+                    num_blocks <= 8'b0;
                     ready <= 1'b1;
                     done <= 1'b0;
-                    block_section <= '0;
+                    block_section <= 4'b0;
                 end
                 
                 // RECEIVE state: receive data per clock cycle (8-bits per clock)
@@ -146,8 +146,8 @@ module message_controller (
     always_comb begin
         // Default assignments
         enable_write = 1'b0;
-        read_addr = 'z;
-        write_data = 'z;
+        read_addr = 8'bz;
+        write_data = 8'bz;
         word_data = 32'h0;
         word_valid = 1'b0;
         if (state == RECEIVE) begin

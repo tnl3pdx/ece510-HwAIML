@@ -8,6 +8,7 @@ module msg_ram (
 );
     // 8-bit wide memory, 1024 locations
     logic [7:0] mem [0:1023]; 
+    logic [9:0] raddr_aligned;
     
     always_ff @(posedge clk) begin
         if (we) begin
@@ -15,5 +16,7 @@ module msg_ram (
         end
     end
 
-    assign rdata = {mem[raddr], mem[raddr+1], mem[raddr+2], mem[raddr+3]};
+    assign raddr_aligned = {2'b00, raddr[7:0]};
+    assign rdata = {mem[raddr_aligned], mem[raddr_aligned+1], mem[raddr_aligned+2], mem[raddr_aligned+3]};
+
 endmodule: msg_ram

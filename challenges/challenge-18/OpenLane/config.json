@@ -4,6 +4,24 @@
     "dir::compression_loop.v", "dir::k_rom.v",
     "dir::msg_ram.v", "dir::w_ram.v"],
   "CLOCK_PERIOD": 5,
-  "CLOCK_PORT": "clk"
+  "CLOCK_PORT": "clk",
+
+  "DIODE_INSERTION_STRATEGY": 4,
+  "RUN_ANTENNA_CHECK": 1,
+  "ANTENNA_CHECK_VIOLS_REPAIR": 1,
+
+  "PL_RESIZER_TIMING_OPTIMIZATIONS": 1,
+  "GLB_RESIZER_TIMING_OPTIMIZATIONS": 1,
+
+  "SYNTH_MAX_FANOUT": 10,
+  "PL_RESIZER_MAX_SLEW_MARGIN": 1.5,
+  "GLB_RESIZER_MAX_SLEW_MARGIN": 1.5,
+  "GLB_RESIZER_MAX_CAP_MARGIN": 0.2,
+  "PL_RESIZER_BUFFER_INPUT_PORTS": 1,
+  "PL_RESIZER_BUFFER_OUTPUT_PORTS": 1,
+
+  "CTS_CLK_BUFFER_LIST": ["sky130_fd_sc_hd__clkbuf_4", "sky130_fd_sc_hd__clkbuf_8"],
+  "CTS_MAX_CAP": 1.53169,
+  "CTS_SINK_CLUSTERING_SIZE": 25
 }
 
