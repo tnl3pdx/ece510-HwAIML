@@ -64,7 +64,7 @@ module sha256 (
     // Output hash when valid
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            hash_out <= '0;
+            hash_out <= 256'b0;
             hash_valid <= 1'b0;
         end else if (hash_ready) begin
             hash_out <= internal_hash;
