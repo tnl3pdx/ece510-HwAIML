@@ -15,11 +15,13 @@ else
     echo "Warning: conda environment not found."
     exit 1
 fi
-
+python3 $OPENRAM_HOME/../sram_compiler.py -v -p "temp/mBufhalf" -o mBufhalf mBufhalf.py
+exit 1
 # Start OpenRAM Compiler Scripts
 
 python3 $OPENRAM_HOME/../sram_compiler.py -v -p "temp/wRAM" -o wRAM wRAM.py
-
+#python3 $OPENRAM_HOME/../rom_compiler.py -v -p "temp/kROM" -o kROM kROM.py
+#python3 $OPENRAM_HOME/../sram_compiler.py -v -p "temp/mBuf" -o mBuf mBuf.py
 : '
 # Check if the first argument is provided
 if [ -z "$1" ]; then

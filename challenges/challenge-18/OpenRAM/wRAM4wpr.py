@@ -3,7 +3,7 @@ word_size = 32
 # Number of words in the memory
 num_words = 64
 
-#words_per_row = 4
+words_per_row = 4
 #write_size = 32
 
 # Port configuration
@@ -20,10 +20,10 @@ tech_name = "sky130"
 nominal_corner_only = True
 
 # Output directory for the results
-output_path = "temp/wRAM"
+output_path = "temp/wRAM4wpr"
 
 # Output file base name
-output_name = "wRAM_32x64"
+output_name = "wRAM4wpr_32x64"
 
 route_supplies = "ring"
 

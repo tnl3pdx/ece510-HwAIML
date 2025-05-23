@@ -1,6 +1,10 @@
 
 # Data word size
-word_size = 1
+word_size = 32
+
+num_words = 256
+
+is_rom = True
 
 # Enable LVS/DRC checking
 check_lvsdrc = True
@@ -25,3 +29,4 @@ nominal_corner_only = True
 
 # Add a supply ring to the generated layout
 route_supplies = "ring"
+
