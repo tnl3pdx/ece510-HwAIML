@@ -1,6 +1,8 @@
 {
   "DESIGN_NAME": "sha256",
-  "VERILOG_FILES": ["dir::sha256.v"],
+  "VERILOG_FILES": ["dir::sha256.v", "dir::message_controller.v",
+    "dir::compression_loop.v", "dir::k_rom.v",
+    "dir::msg_ram.v", "dir::w_ram.v"],
   "CLOCK_PERIOD": 5,
   "CLOCK_PORT": "clk"
 }
