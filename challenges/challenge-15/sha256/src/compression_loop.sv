@@ -4,20 +4,17 @@ module compression_loop (
     input  logic        rst_n,          // Active low reset
     input  logic        start,          // Start signal from message controller
     input  logic [7:0]  num_blocks,     // Number of 512-bit blocks
-    output logic [5:0]  word_address,   // Address for word access
-    output logic        req_word,       // Request signal for word data
-    input  logic [63:0] word_data,      // Data from message controller
+    input  logic [31:0] word_data,      // Data from message controller
     input  logic        word_valid,     // Indicates if word from message controller is valid
     input  logic        enable,         // Enable signal for compression loop
+
+    output logic [5:0]  word_address,   // Address for word access
+    output logic        req_word,       // Request signal for word data
     output logic [7:0]  blockCount,     // Current block index
     output logic [255:0] hash_out,      // Final hash output
     output logic        hash_valid,     // Indicates hash is valid
     output logic        busy            // Signal to indicate compression loop is busy
 );
-
-    // SHA-256 Constants
-    logic [5:0] kSel;
-    logic [31:0] kBus;
 
     // States
     typedef enum logic [3:0] {
@@ -30,9 +27,32 @@ module compression_loop (
     } state_t;
     
     state_t state, next_state;
+
+    // SHA-256 Constants
+    logic [5:0] kSel;
+    logic [31:0] kBus;
+
+    // k_rom instance for SHA-256 constants
+    k_rom k (
+        .kSel(kSel),
+        .kBus(kBus)
+    );
     
     // Message schedule memory (W)
-    logic [31:0] W [0:63];
+    logic [5:0] write_addr;     // Write address for W schedule
+    logic [31:0] write_data;     // Data to write to memory buffer
+    logic [5:0] read_addr;      // Read address for memory buffer
+    logic [31:0] read_data;     // Read data from memory buffer
+    logic enable_write;         // Enable write signal for memory buffer
+
+    w_ram w (
+        .clk(clk),
+        .we(enable_write),
+        .waddr(write_addr),
+        .wdata((state == LOAD_SCHEDULE) ? word_data : write_data),
+        .raddr(read_addr),
+        .rdata(read_data)
+    );
     
     // Working variables and hash values
     logic [31:0] a, b, c, d, e, f, g, h;
@@ -43,9 +63,12 @@ module compression_loop (
     logic [6:0]  schedule_counter;
     logic [6:0]  round_counter;
     logic [2:0]  block_section;
+    logic [2:0]  extend_phase;
 
     // Temporary variables for compression
     logic [31:0] temp1, temp2;
+    logic [31:0] extend_W [0:3];    // Temporary storage for W schedule extension
+    logic [31:0] compress_W;        // Temporary storage for W schedule during compression
     
     // Helper functions (implemented as functions to keep the code clean)
     function logic [31:0] ch(logic [31:0] x, logic [31:0] y, logic [31:0] z);
@@ -72,12 +95,6 @@ module compression_loop (
         return {x[16:0], x[31:17]} ^ {x[18:0], x[31:19]} ^ (x >> 10);
     endfunction
 
-    // Use in compression_loop:
-    k_rom k (
-        .addr(kSel),
-        .data(kBus)
-    );
-
     // State machine
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -88,9 +105,10 @@ module compression_loop (
             schedule_counter <= '0;
             round_counter <= '0;
             req_word <= 1'b0;
-            word_address <= '0;
+            //word_address <= '0;
             block_section <= '0;
             kSel <= '0;
+            extend_phase <= '0;
             
             // Initialize hash values (first block)
             h0 <= 32'h6a09e667;
@@ -114,32 +132,39 @@ module compression_loop (
                 end
                 
                 LOAD_SCHEDULE: begin
-                    if (!req_word && !word_valid) begin
-                        // Request next dword
+                    if (schedule_counter < 16) begin
                         req_word <= 1'b1;
-                        word_address <= current_block * 16 + schedule_counter;
-                    end else if (req_word && word_valid) begin
-                        // Store received word into two 32-bit words
-                        W[schedule_counter+1] <= {
-                            word_data[31:0]
-                        }; 
-                        W[schedule_counter] <= {
-                            word_data[63:32]
-                        }; 
+                        //word_address <= current_block * 16 + schedule_counter;
                         
-                        // Convert from memory (little endian) to big endian
+                        if (word_valid) begin
+                            // Only increment counter when valid data arrives
+                            schedule_counter <= schedule_counter + 1;
+                        end
+                    end else begin
                         req_word <= 1'b0;
-                        schedule_counter <= schedule_counter + 2;
                     end
                 end
                 
                 EXTEND_SCHEDULE: begin
-                    // Extend the first 16 words into 64 words
-                    W[schedule_counter] <= sigma_1(W[schedule_counter-2]) +
-                                          W[schedule_counter-7] +
-                                          sigma_0(W[schedule_counter-15]) +
-                                          W[schedule_counter-16];
-                    schedule_counter <= schedule_counter + 1;
+                    extend_phase <= extend_phase + 1;
+                    case (extend_phase)
+                        0: begin
+                            extend_W[0] <= read_data;
+                        end
+                        1: begin 
+                            extend_W[1] <= read_data;
+                        end 
+                        2: begin
+                            extend_W[2] <= read_data;
+                        end
+                        3: begin
+                            extend_W[3] <= read_data;
+                        end
+                        4: begin
+                            schedule_counter <= schedule_counter + 1;
+                            extend_phase <= '0;
+                        end
+                    endcase
                 end
                 
                 COMPRESS: begin
@@ -178,6 +203,7 @@ module compression_loop (
                     kSel <= '0;
                     current_block <= current_block + 1;
                     busy <= 1'b1;
+                    extend_phase <= '0;
                 end
                 
                 FINALIZE: begin
@@ -196,8 +222,47 @@ module compression_loop (
     // Combinational logic for hash calculation
     always_comb begin
         // Perform calulation
-        temp1 = h + sigma1(e) + ch(e, f, g) + k + W[round_counter-1];
+        temp1 = h + sigma1(e) + ch(e, f, g) + kBus + compress_W;
         temp2 = sigma0(a) + maj(a, b, c);
+    end
+
+    // Combinational logic for memory access
+    always_comb begin
+        enable_write = 1'b0;
+        write_data = 'bz;
+        write_addr = 'bz;
+        read_addr = 'bz;
+        word_address = 'bz;
+        if (state == LOAD_SCHEDULE) begin
+            word_address = current_block * 16 + schedule_counter;
+            write_addr = schedule_counter;
+            if (word_valid) begin
+                enable_write = 1'b1;
+            end
+        end else if (state == EXTEND_SCHEDULE) begin
+            case (extend_phase)
+                0: begin
+                    read_addr = schedule_counter-2; 
+                end
+                1: begin
+                    read_addr = schedule_counter-7; 
+                end
+                2: begin
+                    read_addr = schedule_counter-15; 
+                end
+                3: begin
+                    read_addr = schedule_counter-16; 
+                end
+                4: begin
+                    enable_write = 1'b1;
+                    write_data = sigma_1(extend_W[0]) + extend_W[1] + sigma_0(extend_W[2]) + extend_W[3];
+                    write_addr = schedule_counter;
+                end
+            endcase
+        end else if (state == COMPRESS) begin
+            read_addr = round_counter-1;
+            compress_W = read_data;
+        end
     end
 
     // Next state logic

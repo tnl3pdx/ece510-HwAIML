@@ -1,7 +1,7 @@
 // SHA-256 Full Implementation in SystemVerilog
 // Main top module with message buffer and submodules
 
-module sha256_top (
+module sha256 (
     input  logic        clk,
     input  logic        rst_n,          // Active low reset
     input  logic        enable,         // Enable signal
@@ -19,7 +19,7 @@ module sha256_top (
     logic [7:0]  num_blocks;        // Number of 512-bit blocks
     logic [7:0]  block_index;       // Current block index
     logic [5:0]  word_address;      // Address for word access
-    logic [63:0] word_data;         // Data for word access
+    logic [31:0] word_data;         // Data for word access
     logic        req_word;          // Request signal from compression loop
     logic        word_valid;        // Indicates if word from message controller is valid
     logic [255:0] internal_hash;    // Internal hash output from compression loop
