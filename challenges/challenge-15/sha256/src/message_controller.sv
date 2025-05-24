@@ -67,7 +67,7 @@ module message_controller (
             state <= IDLE;
             bit_count <= 13'b0;
             temp_msgLen <= 13'b0;
-            byte_count <= 11'b0;
+            byte_count <= 10'b0;
             padding_phase <= 1'b0;
             length_phase <= 3'b0;
             num_blocks <= 4'b0;
@@ -124,7 +124,7 @@ module message_controller (
                 
                 CALCULATE_BLOCKS: begin
                     // Calculate number of 512-bit blocks
-                    num_blocks <= (byte_count / 64) - 1;
+                    num_blocks <= (byte_count >> 6) - 1;
                 end
                 
                 READY: begin
