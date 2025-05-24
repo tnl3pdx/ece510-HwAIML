@@ -16,7 +16,7 @@ module msg_ram (
         end
     end
 
-    assign raddr_aligned = {2'b00, raddr[7:0]};
+    assign raddr_aligned = {raddr[7:0], 2'b00}; // Align to 4-byte boundary
     assign rdata = {mem[raddr_aligned], mem[raddr_aligned+1], mem[raddr_aligned+2], mem[raddr_aligned+3]};
 
 endmodule: msg_ram

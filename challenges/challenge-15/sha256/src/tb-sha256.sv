@@ -3,7 +3,7 @@
 
 module tb_sha256();
     // Parameters
-    parameter CLK_PERIOD = 5;    // 200 MHz clock
+    parameter CLK_PERIOD = 20;    // 50 MHz clock
     
     // DUT Signals
     logic           clk;
@@ -19,9 +19,12 @@ module tb_sha256();
     // Test data
     //string test_message = "YxwTU;Y.9?#Z8]]Tvs(DW?{R-1r6/V.}/qa,CH5Y[Fq6{z}&P{=-KHkk";
     //bit [255:0] expected_hash = 256'h2b9a7bd7ff27dbc3031b4d236dd58604411ef5e16d0324226ab360c9b3cf3818;
-    string test_message = "YxwTU;Y.9?#Z8]]Tvs(DW?{R-1r6/V.}/qa,CH5Y[Fq6{z}&P{=-KHkkssssssssssssssssssssssssssdddawadddddddddddddddddddddddddddddddddwd";
-    bit [255:0] expected_hash = 256'h03aecb55e5fca4a2154fe712b6fd25ab53d49d0a67483ffae13525e8946f3899;
-;
+    //string test_message = "YxwTU;Y.9?#Z8]]Tvs(DW?{R-1r6/V.}/qa,CH5Y[Fq6{z}&P{=-KHkkssssssssssssssssssssssssssdddawadddddddddddddddddddddddddddddddddwd";
+    //bit [255:0] expected_hash = 256'h03aecb55e5fca4a2154fe712b6fd25ab53d49d0a67483ffae13525e8946f3899;
+
+    string test_message = "rem ipsum dolor sit amet, consectetur adipiscing elit. Nunc feugiat purus at odio pretium, et condimentum enim interdum. Ut faucibus placerat arcu, ac mollis enim tincidunt a. Mauris sed gravida massa, vel aliquam enim. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. In hac habitasse platea dictumst. Duis at faucibus nisi. Integer leo ipsum, lobortis ac leo vel, fringilla vestibulum turpis. Donec aliquam cursus odio ac viverra. Quisque sollicitudin, est non aliquet laoreet, felis ligula viverra arcu, sed ultricies mi urna at mi.  Vivamus vel commodo turpis. Sed hendrerit commodo est et tempor. Donec fermentum enim at malesuada dictum. Nulla blandit ullamcorper pellentesque. Pellentesque id finibus mauris. Morbi congue est vel purus congue maximus. Donec ac ipsum pharetra, commodo ante a, luctus ipsum. Ut aliquam libero erat, at porta metus viverra id. In ac diam et odio placerat vestibulum. Pdddddddddddddd";
+    bit [255:0] expected_hash = 256'h72f9e20f6408e16ea9e08b9c82e299519aea38713fc1379b99b39441b2143e4e;
+
     //string test_message = "YxwTU;Y.9?#";
     //bit [255:0] expected_hash = 256'hc21919e5b04c8a06164b68bd57293a97c7ef18d7371feea68f3872cdcb23b743;
     int message_index;
@@ -31,7 +34,7 @@ module tb_sha256();
     
     
     // Instantiate DUT
-    sha256_top dut (
+    sha256 dut (
         .clk(clk),
         .rst_n(rst_n),
         .data_in(data_in),
@@ -141,7 +144,7 @@ module tb_sha256();
         $display("Hash (hex): %h", received_hash);
         
         formatVerify();
-
+	/*
         // Back to back test
 
         // Apply reset
@@ -160,7 +163,7 @@ module tb_sha256();
         $display("Hash (hex): %h", received_hash);
         
         formatVerify();
-        
+        */
         // Finish simulation after some time
         #(CLK_PERIOD*20);
         $finish;

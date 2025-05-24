@@ -10,14 +10,14 @@ module message_controller (
     input  logic        data_valid,     // Indicates valid data for data_in
     input  logic        end_of_file,    // Indicates end of input data
     input  logic        busy,           // Incoming busy signal from compression loop
-    input  logic [5:0]  word_address,   // Address from compression loop to read data
+    input  logic [7:0]  word_address,   // Address from compression loop to read data
     input  logic        req_word,       // Request signal from compression loop
-    input  logic [7:0]  current_block,  // Current block index
+    input  logic [3:0]  current_block,  // Current block index
     input  logic        enable,         // Enable signal for message controller
 
     output logic [31:0] word_data,      // Data to be sent to compression loop
     output logic        word_valid,     // Indicates if word from message controller is valid
-    output logic [7:0]  num_blocks,     // Number of 512-bit blocks
+    output logic [3:0]  num_blocks,     // Number of 512-bit blocks
     output logic        ready,          // Indicates if SHA-256 is ready to accept data
     output logic        done            // Indicates if message controller is done processing all blocks
 );
@@ -67,10 +67,10 @@ module message_controller (
             state <= IDLE;
             bit_count <= 13'b0;
             temp_msgLen <= 13'b0;
-            byte_count <= 10'b0;
+            byte_count <= 11'b0;
             padding_phase <= 1'b0;
             length_phase <= 3'b0;
-            num_blocks <= 8'b0;
+            num_blocks <= 4'b0;
             ready <= 1'b0;
             done <= 1'b0;
             block_section <= 4'b0;
@@ -84,7 +84,7 @@ module message_controller (
                     byte_count <= 10'b0;
                     padding_phase <= '0;
                     length_phase <= 3'b0;
-                    num_blocks <= 8'b0;
+                    num_blocks <= 4'b0;
                     ready <= 1'b1;
                     done <= 1'b0;
                     block_section <= 4'b0;
@@ -124,13 +124,14 @@ module message_controller (
                 
                 CALCULATE_BLOCKS: begin
                     // Calculate number of 512-bit blocks
-                    num_blocks <= (byte_count + 63) / 64;
+                    num_blocks <= (byte_count / 64) - 1;
                 end
                 
                 READY: begin
                     // ready <= 1'b0;
                     done <= 1'b1;
                     padding_phase <= '0;
+                    block_section <= 4'b0;
                 end
                 
                 PROVIDE_DATA: begin
@@ -164,14 +165,14 @@ module message_controller (
         end else if (state == LENGTH_APPEND) begin
             enable_write = 1'b1;
             if (length_phase == 6)
-                write_data = {5'b00000, temp_msgLen[10:8]};
+                write_data = {3'b000, temp_msgLen[12:8]};
             else if (length_phase == 7)
-                write_data = temp_msgLen[7:0];
+                write_data = temp_msgLen[7:0];      
             else
                 write_data = 8'h00;
         end else if (state == PROVIDE_DATA) begin
             // Read data from memory buffer
-            read_addr = {word_address, 2'b00};
+            read_addr = word_address;
             word_data = read_data;
             word_valid = req_word;
         end 
@@ -202,7 +203,7 @@ module message_controller (
             end
             PROVIDE_DATA: begin
                 if ((block_section == 4'b1111) && busy && done) begin
-                    if (current_block + 1 < num_blocks) begin
+                    if (current_block < num_blocks) begin
                         next_state = READY;
                     end else begin
                         next_state = IDLE;

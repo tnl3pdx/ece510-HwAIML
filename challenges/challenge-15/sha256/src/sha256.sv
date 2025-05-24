@@ -16,9 +16,9 @@ module sha256 (
     // Control signals between modules
     logic        compression_busy;  // Indicates if compression is busy
     logic        mc_done;           // Indicates if message controller is done
-    logic [7:0]  num_blocks;        // Number of 512-bit blocks
-    logic [7:0]  block_index;       // Current block index
-    logic [5:0]  word_address;      // Address for word access
+    logic [3:0]  num_blocks;        // Number of 512-bit blocks
+    logic [3:0]  block_index;       // Current block index
+    logic [7:0]  word_address;      // Address for word access
     logic [31:0] word_data;         // Data for word access
     logic        req_word;          // Request signal from compression loop
     logic        word_valid;        // Indicates if word from message controller is valid
@@ -54,7 +54,7 @@ module sha256 (
         .req_word(req_word),
         .word_data(word_data),
         .word_valid(word_valid),
-        .blockCount(block_index),
+        .block_count(block_index),
         .hash_out(internal_hash),
         .hash_valid(hash_ready),
         .busy(compression_busy),

@@ -3,14 +3,14 @@ module compression_loop (
     input  logic        clk,            // Clock signal
     input  logic        rst_n,          // Active low reset
     input  logic        start,          // Start signal from message controller
-    input  logic [7:0]  num_blocks,     // Number of 512-bit blocks
+    input  logic [3:0]  num_blocks,     // Number of 512-bit blocks
     input  logic [31:0] word_data,      // Data from message controller
     input  logic        word_valid,     // Indicates if word from message controller is valid
     input  logic        enable,         // Enable signal for compression loop
 
-    output logic [5:0]  word_address,   // Address for word access
+    output logic [7:0]  word_address,   // Address for word access
     output logic        req_word,       // Request signal for word data
-    output logic [7:0]  blockCount,     // Current block index
+    output logic [3:0]  block_count,     // Current block index
     output logic [255:0] hash_out,      // Final hash output
     output logic        hash_valid,     // Indicates hash is valid
     output logic        busy            // Signal to indicate compression loop is busy
@@ -59,7 +59,7 @@ module compression_loop (
     logic [31:0] h0, h1, h2, h3, h4, h5, h6, h7;
     
     // Counters and control signals
-    logic [7:0]  current_block;
+    logic [3:0]  current_block;
     logic [6:0]  schedule_counter;
     logic [6:0]  round_counter;
     logic [2:0]  extend_phase;
@@ -99,13 +99,13 @@ module compression_loop (
             state <= IDLE;
             busy <= 1'b0;
             hash_valid <= 1'b0;
-            current_block <= 8'b0;
+            current_block <= 4'b0;
             schedule_counter <= 7'b0;
             round_counter <= 7'b0;
             req_word <= 1'b0;
-            //word_address <= '0;
             kSel <= 6'b0;
             extend_phase <= 3'b0;
+            hash_out <= 256'b0; 
             
             // Initialize hash values (first block)
             h0 <= 32'h6a09e667;
@@ -124,14 +124,13 @@ module compression_loop (
                     if (start) begin
                         busy <= 1'b1;
                         hash_valid <= 1'b0;
-                        current_block <= 8'b0;
+                        current_block <= 4'b0;
                     end
                 end
                 
                 LOAD_SCHEDULE: begin
                     if (schedule_counter < 16) begin
                         req_word <= 1'b1;
-                        //word_address <= current_block * 16 + schedule_counter;
                         
                         if (word_valid) begin
                             // Only increment counter when valid data arrives
@@ -215,7 +214,7 @@ module compression_loop (
         end
     end
 
-    assign blockCount = current_block;
+    assign block_count = current_block;
     
 
     // Combinational logic for hash calculation
@@ -231,10 +230,10 @@ module compression_loop (
         write_data = 32'bz;
         write_addr = 6'bz;
         read_addr = 6'bz;
-        word_address = 6'bz;
+        word_address = 8'bz;
         if (state == LOAD_SCHEDULE) begin
-            word_address = current_block * 16 + {2'b00, schedule_counter[5:0]};
-            write_addr = schedule_counter[5:0];
+            word_address = {current_block, schedule_counter[3:0]};   // {current_block, schedule_counter[4:0]} for first 16 words
+            write_addr = {2'b00, schedule_counter[3:0]};            // Only need to access first 16 words
             if (word_valid) begin
                 enable_write = 1'b1;
             end
@@ -268,6 +267,7 @@ module compression_loop (
 
     // Next state logic
     always_comb begin
+        next_state = state;
         case (state)
             IDLE: begin
                 if (start && enable) next_state = LOAD_SCHEDULE;
@@ -286,16 +286,13 @@ module compression_loop (
             end
             
             NEXT_BLOCK: begin
-                if (current_block + 1 >= num_blocks) 
+                if (current_block > num_blocks) 
                     next_state = FINALIZE;
                 else
                     next_state = LOAD_SCHEDULE;
             end
             
             FINALIZE: begin
-                next_state = IDLE;
-            end
-            default: begin
                 next_state = IDLE;
             end
         endcase
