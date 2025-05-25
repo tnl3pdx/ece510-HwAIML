@@ -69,28 +69,40 @@ module compression_loop (
     logic [31:0] extend_W [0:3];    // Temporary storage for W schedule extension
     
     // Helper functions (implemented as functions to keep the code clean)
-    function logic [31:0] ch(logic [31:0] x, logic [31:0] y, logic [31:0] z);
-        return ((x & y) ^ (~x & z));
+    function automatic logic [31:0] ch(logic [31:0] x, logic [31:0] y, logic [31:0] z);
+        logic [31:0] result;
+        result = (x & y) ^ (~x & z);
+        return result;
     endfunction
     
-    function logic [31:0] maj(logic [31:0] x, logic [31:0] y, logic [31:0] z);
-        return ((x & y) ^ (x & z) ^ (y & z));
+    function automatic logic [31:0] maj(logic [31:0] x, logic [31:0] y, logic [31:0] z);
+        logic [31:0] result;
+        result = (x & y) ^ (x & z) ^ (y & z);
+        return result;
     endfunction
     
-    function logic [31:0] sigma0(logic [31:0] x);
-        return ({x[1:0], x[31:2]} ^ {x[12:0], x[31:13]} ^ {x[21:0], x[31:22]});
+    function automatic logic [31:0] sigma0(logic [31:0] x);
+        logic [31:0] result;
+        result = {x[1:0], x[31:2]} ^ {x[12:0], x[31:13]} ^ {x[21:0], x[31:22]};
+        return result;
     endfunction
     
-    function logic [31:0] sigma1(logic [31:0] x);
-        return ({x[5:0], x[31:6]} ^ {x[10:0], x[31:11]} ^ {x[24:0], x[31:25]});
+    function automatic logic [31:0] sigma1(logic [31:0] x);
+        logic [31:0] result;
+        result = {x[5:0], x[31:6]} ^ {x[10:0], x[31:11]} ^ {x[24:0], x[31:25]};
+        return result;
     endfunction
     
-    function logic [31:0] sigma_0(logic [31:0] x);
-        return ({x[6:0], x[31:7]} ^ {x[17:0], x[31:18]} ^ (x >> 3));
+    function automatic logic [31:0] sigma_0(logic [31:0] x);
+        logic [31:0] result;
+        result = {x[6:0], x[31:7]} ^ {x[17:0], x[31:18]} ^ (x >> 3);
+        return result;
     endfunction
     
-    function logic [31:0] sigma_1(logic [31:0] x);
-        return ({x[16:0], x[31:17]} ^ {x[18:0], x[31:19]} ^ (x >> 10));
+    function automatic logic [31:0] sigma_1(logic [31:0] x);
+        logic [31:0] result;
+        result = {x[16:0], x[31:17]} ^ {x[18:0], x[31:19]} ^ (x >> 10);
+        return result;
     endfunction
 
     // State machine

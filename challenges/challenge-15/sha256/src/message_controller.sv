@@ -82,7 +82,7 @@ module message_controller (
                 IDLE: begin
                     bit_count <= 13'b0;
                     byte_count <= 10'b0;
-                    padding_phase <= '0;
+                    padding_phase <= 1'b0;
                     length_phase <= 3'b0;
                     num_blocks <= 4'b0;
                     ready <= 1'b1;
@@ -130,7 +130,7 @@ module message_controller (
                 READY: begin
                     // ready <= 1'b0;
                     done <= 1'b1;
-                    padding_phase <= '0;
+                    padding_phase <= 1'b0;
                     block_section <= 4'b0;
                 end
                 
