@@ -1,0 +1,27 @@
+{
+  "DESIGN_NAME": "sha256",
+  "VERILOG_FILES": ["dir::converted/sha256.v", "dir::converted/message_controller.v",
+    "dir::converted/compression_loop.v", "dir::converted/k_rom.v",
+    "dir::converted/msg_ram.v", "dir::converted/w_ram.v"],
+  "CLOCK_PERIOD": 10,
+  "CLOCK_PORT": "clk",
+
+  "RUN_ANTENNA_REPAIR": true,
+  "RUN_HEURISTIC_DIODE_INSERTION": true,
+
+
+  "RUN_POST_CTS_RESIZER_TIMING": 1,
+  "RUN_POST_GRT_RESIZER_TIMING": 1,
+
+  "MAX_FANOUT_CONSTRAINT": 10,
+  "DESIGN_REPAIR_MAX_SLEW_PCT": 1.5,
+  "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 1.5,
+  "GRT_DESIGN_REPAIR_MAX_CAP_PCT": 0.2,
+  "DESIGN_REPAIR_BUFFER_INPUT_PORTS": 1,
+  "DESIGN_REPAIR_BUFFER_OUTPUT_PORTS": 1,
+
+  "CTS_CLK_BUFFERS": ["sky130_fd_sc_hd__clkbuf_4", "sky130_fd_sc_hd__clkbuf_8"],
+  "CTS_MAX_CAP": 1.53169,
+  "CTS_SINK_CLUSTERING_SIZE": 25
+}
+
