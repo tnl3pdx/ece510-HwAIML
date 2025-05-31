@@ -12,7 +12,7 @@ module tb_sha256();
     logic           data_valid;
     logic           end_of_file;
     logic           ready;
-    logic [255:0]   hash_out;
+    logic [31:0]    hash_out;
     logic           hash_valid;
     logic           enable;
     
@@ -34,7 +34,7 @@ module tb_sha256();
     
     
     // Instantiate DUT
-    sha256 dut (
+    sha256_reduced dut (
         .clk(clk),
         .rst_n(rst_n),
         .data_in(data_in),
@@ -53,6 +53,7 @@ module tb_sha256();
         clk = 1;
         #(CLK_PERIOD/2);
     end
+
     
     task automatic reset();
         // Initialize signals
@@ -99,13 +100,45 @@ module tb_sha256();
         end
 
         // Store the received hash
-        received_hash = hash_out;
-        hash_received = 1;
+        collectHash();
 
         enable = 0;
     endtask
 
+    task automatic collectHash();
+        // Variables to collect hash blocks
+        int block_count = 0;
+        int timeout_cycles = 0;
+        int max_timeout = 1000; // Maximum cycles to wait for complete hash
+        
+        // Initialize received hash and flag
+        received_hash = 0;
+        hash_received = 0;
+        
+        // Wait for hash blocks
+        while (block_count < 8 && timeout_cycles < max_timeout) begin
+            timeout_cycles = timeout_cycles + 1;
+            
+            if (hash_valid) begin
+                // Concatenate this hash block to the received hash
+                received_hash[255 - 32*block_count -: 32] = hash_out;
+                $display("Received hash block %0d: %h", block_count, hash_out);
+                block_count = block_count + 1;
+            end
+            @(posedge clk);
+        end
+        
+        if (timeout_cycles >= max_timeout) begin
+            $display("ERROR: Timeout waiting for complete hash. Only received %0d blocks.", block_count);
+        end else begin
+            // Set flag indicating hash is complete
+            hash_received = 1;
+            $display("Complete 256-bit hash collected");
+        end
+    endtask
+
     task automatic formatVerify();
+
         // Format the hash in the standard hex representation
         $write("Hash (formatted): ");
         for (int i = 0; i < 256; i += 8) begin
