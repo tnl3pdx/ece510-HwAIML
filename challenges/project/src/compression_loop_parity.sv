@@ -7,6 +7,7 @@ module compression_loop_parity (
     input  logic [31:0] word_data,      // Data from message controller
     input  logic        word_valid,     // Indicates if word from message controller is valid
     input  logic        enable,         // Enable signal for compression loop
+    input  logic        hash_ack,      // Acknowledge signal for hash output
 
     output logic [7:0]  word_address,   // Address for word access
     output logic        req_word,       // Request signal for word data
@@ -154,7 +155,25 @@ module compression_loop_parity (
                         busy <= 1'b1;
                         hash_valid <= 1'b0;
                         current_block <= 4'b0;
+                        schedule_counter <= 7'b0;
+                        round_counter <= 7'b0;
+                        req_word <= 1'b0;
+                        kSel <= 6'b0;
+                        extend_phase <= 3'b0;
+                        hash_out <= 256'b0; 
+                        h0 <= 32'h6a09e667;
+                        h1 <= 32'hbb67ae85;
+                        h2 <= 32'h3c6ef372;
+                        h3 <= 32'ha54ff53a;
+                        h4 <= 32'h510e527f;
+                        h5 <= 32'h9b05688c;
+                        h6 <= 32'h1f83d9ab;
+                        h7 <= 32'h5be0cd19;
                     end
+                    if (hash_ack) begin
+                        hash_valid <= 1'b0; // Reset hash valid on ack
+                    end
+
                 end
                 
                 LOAD_SCHEDULE: begin
@@ -367,7 +386,7 @@ module compression_loop_parity (
             end
             
             NEXT_BLOCK: begin
-                if (current_block > num_blocks) 
+                if (current_block >= num_blocks) 
                     next_state = FINALIZE;
                 else
                     next_state = LOAD_SCHEDULE;

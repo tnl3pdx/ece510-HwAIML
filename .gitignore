@@ -24,3 +24,4 @@ work
 *.wlf
 *.vcd
 wlft*
+converted/

@@ -25,6 +25,7 @@ module sha256_reduced (
     logic [255:0]   internal_hash;     // Internal hash output from compression loop
     logic           hash_ready;        // Indicates if hash is ready to be outputted
     logic [2:0]     hash_counter;      // Counter for hash output cycles
+    logic           hash_ack;          // Acknowledge signal for hash output
     
     // Message Controller instantiation
     message_controller mc (
@@ -58,6 +59,7 @@ module sha256_reduced (
         .block_count(block_index),
         .hash_out(internal_hash),
         .hash_valid(hash_ready),
+        .hash_ack(hash_ack),
         .busy(compression_busy),
         .enable(enable)
     );
@@ -65,13 +67,17 @@ module sha256_reduced (
     // Output hash in 32-bit chunks using hash_counter
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            hash_counter    <= 3'b0;
+            hash_counter <= 3'b0;
+            hash_ack <= 1'b0;
         end else if (hash_valid) begin
             if (hash_counter < 3'b111) begin
                 hash_counter <= hash_counter + 1;
+            end else begin
+                hash_ack <= 1'b1; // Acknowledge hash output
             end
         end else begin
             hash_counter <= 3'b0; // Reset counter if not valid
+            hash_ack <= 1'b0; // Acknowledge hash output
         end   
     end
     assign hash_valid = (hash_counter <= 3'b111 && enable && hash_ready) ? 1'b1 : 1'b0;

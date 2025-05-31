@@ -71,7 +71,6 @@ module message_controller (
             padding_phase <= 1'b0;
             length_phase <= 3'b0;
             num_blocks <= 4'b0;
-            ready <= 1'b0;
             done <= 1'b0;
             block_section <= 4'b0;
         end else begin
@@ -81,11 +80,11 @@ module message_controller (
                 // IDLE state: waiting for data
                 IDLE: begin
                     bit_count <= 13'b0;
+                    temp_msgLen <= 13'b0;
                     byte_count <= 10'b0;
                     padding_phase <= 1'b0;
                     length_phase <= 3'b0;
                     num_blocks <= 4'b0;
-                    ready <= 1'b1;
                     done <= 1'b0;
                     block_section <= 4'b0;
                 end
@@ -128,7 +127,6 @@ module message_controller (
                 end
                 
                 READY: begin
-                    // ready <= 1'b0;
                     done <= 1'b1;
                     padding_phase <= 1'b0;
                     block_section <= 4'b0;
@@ -142,6 +140,8 @@ module message_controller (
             endcase
         end
     end
+
+    assign ready = (state == IDLE) && !busy;
 
     // Combinational logic
     always_comb begin

@@ -1,0 +1,2 @@
+# Project Directory
+This project folder will contain the most recent and updated implementation of the SHA-256 HDL code. Other folders may contain src folders, but executing start.sh will update those folders with the contents of this one.
