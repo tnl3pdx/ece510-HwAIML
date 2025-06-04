@@ -2,7 +2,7 @@
 
 The repository contains challenge solutions for ECE 510 - Hardware In AI and ML. Each week, 1 challenge is attempted to see if a solution can be found using LLMs.
 
-Attempted Challenges (as of 5/15/2025):
+Attempted Challenges (as of 6/4/2025):
 - Challenge 5
 - Challenge 6  (Finish Summary)
 - Challenge 7  (Finish Summary)
@@ -10,7 +10,9 @@ Attempted Challenges (as of 5/15/2025):
 - Challenge 9  (Needs Cleanup) (Finish Summary)
 - Challenge 12 (Needs Cleanup) (Finish Summary)
 - Challenge 15 (Needs Cleanup) (Finish Summary)
-- Challenge 18 (WIP)
+- Challenge 18 (Needs Cleanup) (Finish Summary) 
+- Challenge 21 (WIP)
+- Challenge 25 (WIP)
 
 Log Book Link: [Google Drive](https://drive.google.com/drive/folders/14qTbDQHp6gnZEJzkRY6MXAn2CLWChqG-?usp=sharing)
 
