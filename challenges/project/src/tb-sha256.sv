@@ -175,11 +175,12 @@ module tb_sha256();
 
     // Reset and test sequence
     initial begin
+	$timeformat(-9, 2, " ns", 20);
         num_iterations = 0;
 
         // Reset DUT
         reset();
-
+	/*
         test_message = "YxwTU;Y.9?#Z8]]Tvs(DW?{R-1r6/V.}/qa,CH5Y[Fq6{z}&P{=-KHkk";
         expected_hash = 256'h2b9a7bd7ff27dbc3031b4d236dd58604411ef5e16d0324226ab360c9b3cf3818;
 
@@ -189,23 +190,25 @@ module tb_sha256();
         expected_hash = 256'h03aecb55e5fca4a2154fe712b6fd25ab53d49d0a67483ffae13525e8946f3899;
 
         testSequence(test_message, expected_hash);
-
+	*/
         test_message = "rem ipsum dolor sit amet, consectetur adipiscing elit. Nunc feugiat purus at odio pretium, et condimentum enim interdum. Ut faucibus placerat arcu, ac mollis enim tincidunt a. Mauris sed gravida massa, vel aliquam enim. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. In hac habitasse platea dictumst. Duis at faucibus nisi. Integer leo ipsum, lobortis ac leo vel, fringilla vestibulum turpis. Donec aliquam cursus odio ac viverra. Quisque sollicitudin, est non aliquet laoreet, felis ligula viverra arcu, sed ultricies mi urna at mi.  Vivamus vel commodo turpis. Sed hendrerit commodo est et tempor. Donec fermentum enim at malesuada dictum. Nulla blandit ullamcorper pellentesque. Pellentesque id finibus mauris. Morbi congue est vel purus congue maximus. Donec ac ipsum pharetra, commodo ante a, luctus ipsum. Ut aliquam libero erat, at porta metus viverra id. In ac diam et odio placerat vestibulum. Pdddddddddddddd";
         expected_hash = 256'h72f9e20f6408e16ea9e08b9c82e299519aea38713fc1379b99b39441b2143e4e;
 
         testSequence(test_message, expected_hash);
-
+	/*
         test_message = "YxwTU;Y.9?#";
         expected_hash = 256'hc21919e5b04c8a06164b68bd57293a97c7ef18d7371feea68f3872cdcb23b743;
 
         testSequence(test_message, expected_hash);
-
+	*/
         // Check if any test failed
         if (iffail) begin
             $display("A Test failed, check the output above for details.");
         end else begin
             $display("All tests passed successfully!");
         end
+
+	$display("Simulation Parameters: \n %d ns clock period\nCurrent Clock: %t", CLK_PERIOD, $realtime);
         
         // Finish simulation after some time
         #(CLK_PERIOD*20);

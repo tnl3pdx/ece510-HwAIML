@@ -3,17 +3,10 @@ from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, FallingEdge, Timer, ClockCycles
 from cocotb.regression import TestFactory
 import random
+from parameters import TRANSACTION_TIME, CLK_PERIOD
 
-# Clock period in ns
-CLK_PERIOD = 10
 
-# Widths for SPI communication
-CTOP_WIDTH = 8  # Controller to Peripheral data width
-PTOP_WIDTH = 32  # Peripheral to Controller data width
-PAUSE_CLK = 1  # Pause time
-TRANSACTION_TIME = CTOP_WIDTH + PTOP_WIDTH + PAUSE_CLK + 4  # Total cycles for a transaction
-
-# Random 
+# Random
 
 
 async def initialize_test(dut):
@@ -36,7 +29,7 @@ async def initialize_test(dut):
 
 async def run_spi_transaction(dut, data_c, data_p, transaction_name=""):
     """Run a single SPI transaction with the provided data values"""
-    dut._log.info(f"Starting {transaction_name} with Controller sending 0x{data_c:02X}, Peripheral sending 0x{data_p:02X}")
+    dut._log.info(f"Starting {transaction_name} with Controller sending 0x{data_c:04X}, Peripheral sending 0x{data_p:04X}")
     
     # Set the data to send
     dut.data_send_c.value = data_c
@@ -56,7 +49,7 @@ async def run_spi_transaction(dut, data_c, data_p, transaction_name=""):
     controller_received = int(dut.CIPO_register.value)
     peripheral_received = int(dut.COPI_register_0.value)
     
-    dut._log.info(f"Transaction results: Controller received 0x{controller_received:02X}, Peripheral received 0x{peripheral_received:02X}")
+    dut._log.info(f"Transaction results: Controller received 0x{controller_received:04X}, Peripheral received 0x{peripheral_received:04X}")
     
     # Return values for assertion checking
     return controller_received, peripheral_received
@@ -68,14 +61,14 @@ async def test_spi_basic_transaction(dut):
     
     # Define test data
     test_data_controller = 0xA5  # 10100101
-    test_data_peripheral = 0x5A  # 01011010
+    test_data_peripheral = 0x5AA55152  # 10101010101010100101010101010010
     
     # Run transaction
     controller_rx, peripheral_rx = await run_spi_transaction(dut, test_data_controller, test_data_peripheral, "basic transaction")
     
     # Verify data was correctly transmitted in both directions
-    assert controller_rx == test_data_peripheral, f"Controller received wrong data: expected 0x{test_data_peripheral:02X}, got 0x{controller_rx:02X}"
-    assert peripheral_rx == test_data_controller, f"Peripheral received wrong data: expected 0x{test_data_controller:02X}, got 0x{peripheral_rx:02X}"
+    assert controller_rx == test_data_peripheral, f"Controller received wrong data: expected 0x{test_data_peripheral:04X}, got 0x{controller_rx:04X}"
+    assert peripheral_rx == test_data_controller, f"Peripheral received wrong data: expected 0x{test_data_controller:04X}, got 0x{peripheral_rx:04X}"
 
 @cocotb.test()
 async def test_spi_multiple_transactions(dut):
@@ -83,10 +76,10 @@ async def test_spi_multiple_transactions(dut):
     await initialize_test(dut)
     
     test_data = [
-        (0x55, 0xAA),  # First transaction data (controller, peripheral)
-        (0x33, 0xCC),  # Second transaction data
-        (0xFF, 0x00),  # Third transaction data
-        (0x0F, 0xF0),  # Fourth transaction data
+        (0x55, 0xAAAAAAAA),  # First transaction data (controller, peripheral)
+        (0x33, 0xCCCCCCCC),  # Second transaction data
+        (0xFF, 0x00000000),  # Third transaction data
+        (0x0F, 0xF0F0F0F0),  # Fourth transaction data
     ]
     
     for i, (data_c, data_p) in enumerate(test_data):
@@ -105,7 +98,7 @@ async def test_spi_reset_during_transaction(dut):
     
     # Start a transaction
     dut.data_send_c.value = 0x55
-    dut.data_send_p.value = 0xAA
+    dut.data_send_p.value = 0xCCAA33FF
     
     dut.start_comm.value = 1
     await ClockCycles(dut.clk, 2)
@@ -119,10 +112,10 @@ async def test_spi_reset_during_transaction(dut):
     await ClockCycles(dut.clk, 5)
     
     # Start a new transaction after reset
-    controller_rx, peripheral_rx = await run_spi_transaction(dut, 0x33, 0xCC, "post-reset transaction")
+    controller_rx, peripheral_rx = await run_spi_transaction(dut, 0x33, 0x33FFCCFF, "post-reset transaction")
     
     # Verify the new transaction works correctly after reset
-    assert controller_rx == 0xCC, f"Controller received wrong data after reset"
+    assert controller_rx == 0x33FFCCFF, f"Controller received wrong data after reset"
     assert peripheral_rx == 0x33, f"Peripheral received wrong data after reset"
 
 @cocotb.test()
@@ -133,7 +126,7 @@ async def test_spi_random_data(dut):
     # Run multiple tests with random data
     for i in range(5):
         data_c = random.randint(0, 255)  # Random 8-bit value for controller
-        data_p = random.randint(0, 255)  # Random 8-bit value for peripheral
+        data_p = random.randint(0, 2^32 - 1)  # Random 32-bit value for peripheral
         
         controller_rx, peripheral_rx = await run_spi_transaction(dut, data_c, data_p, f"random test {i+1}")
         

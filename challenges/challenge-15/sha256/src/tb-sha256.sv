@@ -3,7 +3,7 @@
 
 module tb_sha256();
     // Parameters
-    parameter CLK_PERIOD = 10;    // Clock period in nanoseconds
+    parameter CLK_PERIOD = 15;    // Clock period in nanoseconds
     
     // DUT Signals
     logic           clk;
@@ -127,7 +127,7 @@ module tb_sha256();
 
     // Reset and test sequence
     initial begin
-  
+        $timeformat(-9, 2, " ns", 20);
         // Apply reset
         reset();
         
@@ -165,6 +165,9 @@ module tb_sha256();
         formatVerify();
         */
         // Finish simulation after some time
+
+        $display("Simulation Parameters: \n %d ns clock period\nCurrent Clock: %t", CLK_PERIOD, $realtime);
+
         #(CLK_PERIOD*20);
         $finish;
     end

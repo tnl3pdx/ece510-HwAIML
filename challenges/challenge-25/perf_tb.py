@@ -6,15 +6,10 @@ import random
 import csv
 import os
 from pathlib import Path
+from parameters import TRANSACTION_TIME, CLK_PERIOD
 
 # Clock period in ns
-CLK_PERIOD = 10
-
-# Widths for SPI communication
-CTOP_WIDTH = 8  # Controller to Peripheral data width
-PTOP_WIDTH = 32  # Peripheral to Controller data width
-PAUSE_CLK = 1  # Pause time
-TRANSACTION_TIME = CTOP_WIDTH + PTOP_WIDTH + PAUSE_CLK + 4  # Total cycles for a transaction
+CLK_PERIOD = 15
 
 async def initialize_test(dut):
     """Setup test with initial conditions and start clock"""
@@ -34,7 +29,7 @@ async def initialize_test(dut):
     dut.rst.value = 1
     await ClockCycles(dut.clk, 5)
 
-async def measure_transaction_latency(dut, data_c=0xA5, data_p=0x5A):
+async def measure_transaction_latency(dut, data_c=0xA5, data_p=0x5A56215B):
     """Measure the latency of a single transaction in clock cycles"""
     # Set the data to send
     dut.data_send_c.value = data_c
@@ -81,7 +76,7 @@ async def measure_throughput(dut, num_transactions=100):
     # Run multiple transactions
     for i in range(num_transactions):
         data_c = random.randint(0, 255)
-        data_p = random.randint(0, 255)
+        data_p = random.randint(0, 2^32 - 1)  # Random 32-bit value for peripheral
         
         # Set the data to send
         dut.data_send_c.value = data_c
@@ -122,7 +117,7 @@ async def test_latency(dut):
     # Perform multiple tests to get an average
     for i in range(10):
         data_c = random.randint(0, 255)
-        data_p = random.randint(0, 255)
+        data_p = random.randint(0, 2^32 - 1)
         
         latency = await measure_transaction_latency(dut, data_c, data_p)
         results.append(latency)
