@@ -1,10 +1,13 @@
-# Navigation
-
-A page in the wiki is provided to assist with navigation of this repository: [Link](https://github.com/tnl3pdx/ece510-HwAIML/wiki/Navigation-Menu)
 
 # ece510-HwAIML
 
 The repository contains challenge solutions for ECE 510 - Hardware In AI and ML. Each week, 1 challenge is attempted to see if a solution can be found using LLMs.
+
+## Navigation
+
+A page in the wiki is provided to assist with navigation of this repository: [Link](https://github.com/tnl3pdx/ece510-HwAIML/wiki)
+
+## Challenge List
 
 Attempted Challenges (as of 6/4/2025):
 - Challenge 5
