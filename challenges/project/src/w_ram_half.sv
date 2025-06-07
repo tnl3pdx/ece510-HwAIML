@@ -3,8 +3,10 @@ module w_ram_half (
     input  logic        we,
     input  logic [4:0]  waddr,
     input  logic [31:0] wdata,
-    input  logic [4:0]  raddr,
-    output logic [31:0] rdata
+    input  logic [4:0]  raddr1,
+    output logic [31:0] rdata1,
+    input  logic [4:0]  raddr2,
+    output logic [31:0] rdata2
 );
 
     // Memory array: 64 words of 32 bits each
@@ -18,6 +20,7 @@ module w_ram_half (
         end
     end
 
-    assign rdata = mem[raddr]; // Output data
+    assign rdata1 = mem[raddr1]; // Output data
+    assign rdata2 = mem[raddr2]; // Output data
 
 endmodule

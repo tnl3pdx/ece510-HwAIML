@@ -42,8 +42,10 @@ module compression_loop_parity (
     // Message schedule memory (W) (Even)
     logic [4:0] write_addr_e;     // Write address for W schedule
     logic [31:0] write_data_e;     // Data to write to memory buffer
-    logic [4:0] read_addr_e;      // Read address for memory buffer
-    logic [31:0] read_data_e;     // Read data from memory buffer
+    logic [4:0] read_addr1_e;      // Read address for memory buffer
+    logic [31:0] read_data1_e;     // Read data from memory buffer
+    logic [4:0] read_addr2_e;      // Read address for memory buffer
+    logic [31:0] read_data2_e;     // Read data from memory buffer
     logic enable_write_e;         // Enable write signal for memory buffer
 
     w_ram_half w_e (
@@ -51,14 +53,18 @@ module compression_loop_parity (
         .we(enable_write_e),
         .waddr(write_addr_e),
         .wdata((state == LOAD_SCHEDULE) ? word_data : write_data_e),
-        .raddr(read_addr_e),
-        .rdata(read_data_e)
+        .raddr1(read_addr1_e),
+        .rdata1(read_data1_e),
+        .raddr2(read_addr2_e),
+        .rdata2(read_data2_e)
     );
 
     logic [4:0] write_addr_o;     // Write address for W schedule
     logic [31:0] write_data_o;     // Data to write to memory buffer
-    logic [4:0] read_addr_o;      // Read address for memory buffer
-    logic [31:0] read_data_o;     // Read data from memory buffer
+    logic [4:0] read_addr1_o;      // Read address for memory buffer
+    logic [31:0] read_data1_o;     // Read data from memory buffer
+    logic [4:0] read_addr2_o;      // Read address for memory buffer
+    logic [31:0] read_data2_o;     // Read data from memory buffer
     logic enable_write_o;         // Enable write signal for memory buffer
 
     w_ram_half w_o (
@@ -66,8 +72,10 @@ module compression_loop_parity (
         .we(enable_write_o),
         .waddr(write_addr_o),
         .wdata((state == LOAD_SCHEDULE) ? word_data : write_data_o),
-        .raddr(read_addr_o),
-        .rdata(read_data_o)
+        .raddr1(read_addr1_o),
+        .rdata1(read_data1_o),
+        .raddr2(read_addr2_o),
+        .rdata2(read_data2_o)
     );
 
     logic [31:0] switch_read_data; // Read data from both memories
@@ -194,23 +202,18 @@ module compression_loop_parity (
                     case (extend_phase)
                         0: begin
                             if (schedule_counter[0] == 1'b0) begin
-                                extend_W[0] <= read_data_e;
-                                extend_W[1] <= read_data_o;
+                                extend_W[0] <= read_data1_e;
+                                extend_W[1] <= read_data1_o;
+                                extend_W[2] <= read_data2_o;
+                                extend_W[3] <= read_data2_e;
                             end else begin
-                                extend_W[0] <= read_data_o;
-                                extend_W[1] <= read_data_e;
+                                extend_W[0] <= read_data1_o;
+                                extend_W[1] <= read_data1_e;
+                                extend_W[2] <= read_data2_e;
+                                extend_W[3] <= read_data2_o;
                             end 
                         end
                         1: begin
-                            if (schedule_counter[0] == 1'b0) begin
-                                extend_W[2] <= read_data_o;
-                                extend_W[3] <= read_data_e;
-                            end else begin
-                                extend_W[2] <= read_data_e;
-                                extend_W[3] <= read_data_o;
-                            end
-                        end
-                        2: begin
                             schedule_counter <= schedule_counter + 1;
                             extend_phase <= 3'b0;
                         end
@@ -279,9 +282,9 @@ module compression_loop_parity (
         // Perform calulation
         if (state == COMPRESS) begin
             if (round_counter[0] == 1'b1) begin
-                switch_read_data = read_data_e;
+                switch_read_data = read_data1_e;
             end else begin
-                switch_read_data = read_data_o;
+                switch_read_data = read_data1_o;
             end
             temp1 = h + sigma1(e) + ch(e, f, g) + kBus + switch_read_data;
             temp2 = sigma0(a) + maj(a, b, c);
@@ -294,13 +297,15 @@ module compression_loop_parity (
         enable_write_e = 1'b0;
         write_data_e = 32'bz;
         write_addr_e = 5'bz;
-        read_addr_e = 5'bz;
+        read_addr1_e = 5'bz;
+        read_addr2_e = 5'bz;
 
         // Mem B
         enable_write_o = 1'b0;
         write_data_o = 32'bz;
         write_addr_o = 5'bz;
-        read_addr_o = 5'bz;
+        read_addr1_o = 5'bz;
+        read_addr2_o = 5'bz;
 
         word_address = 8'bz;
         if (state == LOAD_SCHEDULE) begin
@@ -322,23 +327,18 @@ module compression_loop_parity (
             case (extend_phase)
                 0: begin
                     if (schedule_counter[0] == 1'b0) begin
-                        read_addr_e = schedule_counter[5:1]-1; 
-                        read_addr_o = schedule_counter[5:1]-4; 
+                        read_addr1_e = schedule_counter[5:1]-1; 
+                        read_addr1_o = schedule_counter[5:1]-4;
+                        read_addr2_o = schedule_counter[5:1]-8; 
+                        read_addr2_e = schedule_counter[5:1]-8;  
                     end else begin
-                        read_addr_o = schedule_counter[5:1]-1; 
-                        read_addr_e = schedule_counter[5:1]-3; 
+                        read_addr1_o = schedule_counter[5:1]-1; 
+                        read_addr1_e = schedule_counter[5:1]-3;
+                        read_addr2_e = schedule_counter[5:1]-7; 
+                        read_addr2_o = schedule_counter[5:1]-8;  
                     end
                 end
                 1: begin
-                    if (schedule_counter[0] == 1'b0) begin
-                        read_addr_o = schedule_counter[5:1]-8; 
-                        read_addr_e = schedule_counter[5:1]-8; 
-                    end else begin
-                        read_addr_e = schedule_counter[5:1]-7; 
-                        read_addr_o = schedule_counter[5:1]-8; 
-                    end
-                end
-                2: begin
                     // Determine which memory to write to based on parity of schedule_counter
                     if (schedule_counter[0] == 1'b0) begin
                         enable_write_e = 1'b1;
@@ -352,15 +352,17 @@ module compression_loop_parity (
 
                 end
                 default: begin
-                    read_addr_e = 5'bz;
-                    read_addr_o = 5'bz;
+                    read_addr1_e = 5'bz;
+                    read_addr1_o = 5'bz;
+                    read_addr2_e = 5'bz;
+                    read_addr2_o = 5'bz;
                 end
             endcase
         end else if (state == COMPRESS) begin
             if (round_counter[0] == 1'b1) begin
-                read_addr_e = round_counter[5:1];
+                read_addr1_e = round_counter[5:1];
             end else begin
-                read_addr_o = round_counter[5:1] - 1;
+                read_addr1_o = round_counter[5:1] - 1;
             end
         end
     end
