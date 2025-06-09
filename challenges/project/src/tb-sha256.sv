@@ -3,7 +3,7 @@
 
 module tb_sha256();
     // Parameters
-    parameter CLK_PERIOD = 15;    // Clock period in nanoseconds
+    parameter CLK_PERIOD = 10;    // Clock period in nanoseconds
     
     // DUT Signals
     logic           clk;

@@ -9,7 +9,7 @@ module w_ram_half (
     output logic [31:0] rdata2
 );
 
-    // Memory array: 64 words of 32 bits each
+    // Memory array: 32 words of 32 bits each
     logic [31:0] mem [0:31];
 
     // Read and write operations

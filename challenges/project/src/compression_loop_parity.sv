@@ -1,20 +1,26 @@
 // Compression Loop Module
 module compression_loop_parity (
+    // General Interface
     input  logic        clk,            // Clock signal
-    input  logic        rst_n,          // Active low reset
+    input  logic        rst_n,          // Active low reset   
+    input  logic        enable,         // Enable signal for compression loop
+
+    // Message Controller Interface
     input  logic        start,          // Start signal from message controller
-    input  logic [3:0]  num_blocks,     // Number of 512-bit blocks
     input  logic [31:0] word_data,      // Data from message controller
     input  logic        word_valid,     // Indicates if word from message controller is valid
-    input  logic        enable,         // Enable signal for compression loop
-    input  logic        hash_ack,      // Acknowledge signal for hash output
-
-    output logic [7:0]  word_address,   // Address for word access
+    
+    output logic        busy,            // Signal to indicate compression loop is busy
+    output logic [3:0]  word_address,   // Address for word access
     output logic        req_word,       // Request signal for word data
-    output logic [3:0]  block_count,     // Current block index
+    output logic [3:0]  block_count,    // Current block index
+    output logic        load_done,      // Indicates loading is done
+
+    // Hash Output Interface
+    input  logic        hash_ack,       // Acknowledge signal for hash output
     output logic [255:0] hash_out,      // Final hash output
-    output logic        hash_valid,     // Indicates hash is valid
-    output logic        busy            // Signal to indicate compression loop is busy
+    output logic        hash_valid     // Indicates hash is valid
+    
 );
 
     // States
@@ -23,7 +29,6 @@ module compression_loop_parity (
         LOAD_SCHEDULE,
         EXTEND_SCHEDULE,
         COMPRESS,
-        NEXT_BLOCK,
         FINALIZE
     } state_t;
     
@@ -144,6 +149,7 @@ module compression_loop_parity (
             kSel <= 6'b0;
             extend_phase <= 3'b0;
             hash_out <= 256'b0; 
+            load_done <= 1'b0;
             
             // Initialize hash values (first block)
             h0 <= 32'h6a09e667;
@@ -194,10 +200,12 @@ module compression_loop_parity (
                         end
                     end else begin
                         req_word <= 1'b0;
+                        load_done <= 1'b1; // Indicate loading is done
                     end
                 end
                 
                 EXTEND_SCHEDULE: begin
+                    load_done <= 1'b0;
                     extend_phase <= extend_phase + 1;
                     case (extend_phase)
                         0: begin
@@ -244,23 +252,9 @@ module compression_loop_parity (
                     end
                 end
                 
-                NEXT_BLOCK: begin
-                    // Update hash values
-                    h0 <= h0 + a; h1 <= h1 + b; h2 <= h2 + c; h3 <= h3 + d;
-                    h4 <= h4 + e; h5 <= h5 + f; h6 <= h6 + g; h7 <= h7 + h;
-                    
-                    // Reset counters for next block
-                    schedule_counter <= 7'b0;
-                    round_counter <= 7'b0;
-                    kSel <= 6'b0;
-                    current_block <= current_block + 1;
-                    busy <= 1'b1;
-                    extend_phase <= 3'b0;
-                end
-                
                 FINALIZE: begin
                     // Combine hash values for final output
-                    hash_out <= {h0, h1, h2, h3, h4, h5, h6, h7};
+                    hash_out <= {a, b, c, d, e, f, g, h};
                     hash_valid <= 1'b1;
                     busy <= 1'b0;
                 end
@@ -309,7 +303,7 @@ module compression_loop_parity (
 
         word_address = 8'bz;
         if (state == LOAD_SCHEDULE) begin
-            word_address = {current_block, schedule_counter[3:0]};   // {current_block, schedule_counter[4:0]} for first 16 words
+            word_address = schedule_counter[3:0];   // {current_block, schedule_counter[4:0]} for first 16 words
 
             // Check paritiy of last bit of schedule_counter to determine which memory to write to
             if (word_valid) begin
@@ -384,14 +378,7 @@ module compression_loop_parity (
             end
             
             COMPRESS: begin
-                if (round_counter == 65) next_state = NEXT_BLOCK; // 64 rounds + initialization
-            end
-            
-            NEXT_BLOCK: begin
-                if (current_block >= num_blocks) 
-                    next_state = FINALIZE;
-                else
-                    next_state = LOAD_SCHEDULE;
+                if (round_counter == 65) next_state = FINALIZE; // 64 rounds + initialization
             end
             
             FINALIZE: begin

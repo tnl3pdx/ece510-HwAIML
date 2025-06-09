@@ -6,13 +6,13 @@
 module message_controller (
     input  logic        clk,            // Clock signal
     input  logic        rst_n,          // Active low reset
-    input  logic [7:0]  data_in,       // Input data stream (8 bits)
+    input  logic [7:0]  data_in,        // Input data stream (8 bits)
     input  logic        data_valid,     // Indicates valid data for data_in
     input  logic        end_of_file,    // Indicates end of input data
     input  logic        busy,           // Incoming busy signal from compression loop
     input  logic [7:0]  word_address,   // Address from compression loop to read data
     input  logic        req_word,       // Request signal from compression loop
-    input  logic [3:0]  current_block,  // Current block index
+    input  logic        cont,           // Continue signal from top module
     input  logic        enable,         // Enable signal for message controller
 
     output logic [31:0] word_data,      // Data to be sent to compression loop
@@ -202,8 +202,8 @@ module message_controller (
                 if (!busy) next_state = PROVIDE_DATA;
             end
             PROVIDE_DATA: begin
-                if ((block_section == 4'b1111) && busy && done) begin
-                    if (current_block < num_blocks) begin
+                if ((block_section == 4'b1111) && done) begin
+                    if (cont) begin
                         next_state = READY;
                     end else begin
                         next_state = IDLE;
