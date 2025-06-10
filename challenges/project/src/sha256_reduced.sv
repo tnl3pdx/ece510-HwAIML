@@ -22,6 +22,7 @@ module sha256_reduced
 
     
     logic [3:0]     num_blocks;        // Number of 512-bit blocks
+    logic [3:0]     block_count;       // Current block count
     logic [255:0]   internal_hash;     // Internal hash output from compression loop
     logic           hash_ready;        // Indicates if hash is ready to be outputted
     logic [2:0]     hash_counter;      // Counter for hash output cycles
@@ -50,14 +51,17 @@ module sha256_reduced
     logic [3:0]             cl_current_block [num_loops];       // Current block index for each loop
     logic                   cl_load_done [num_loops];            // Load done signal for each loop
 
-    logic                   cl_hash_ack [num_loops];          // Acknowledge signal for hash output
-    logic [255:0]           cl_internal_hash [num_loops];     // Internal hash output for each loop
-    logic                   cl_hash_valid [num_loops];        // Hash valid signal for each loop
+    logic [3:0]             cl_hash_ack;                        // Acknowledge signal for hash output
+    logic [255:0]           cl_internal_hash [num_loops];       // Internal hash output for each loop
+    logic [255:0]           cl_hash_out [num_loops];            // Individual hash outputs
+    logic [255:0]           cl_output_hash;                     // Output hash from last compression loop
+    logic                   cl_hash_valid [num_loops];          // Hash valid signal for each loop
 
     logic          cont;                // Continue signal for message controller
     logic [3:0] cl_block_count;         // Block count for compression loop
-    logic [3:0] cl_block_remainder;     // Remaining blocks for compression loop
     logic [num_loops-1:0] cl_select;    // Select signal for compression loop
+    logic cl_init_hash;                 // Initial hash flag for compression loop
+    logic cl_finalize;                // Finalize signal for compression loop
     
     // Message Controller instantiation
     message_controller mc (
@@ -98,8 +102,9 @@ module sha256_reduced
                 .block_count(cl_current_block[i]),
                 .load_done(cl_load_done[i]),
 
+                .prev_hash(cl_internal_hash[i]),
                 .hash_ack(cl_hash_ack[i]),
-                .hash_out(cl_internal_hash[i]),
+                .hash_out(cl_hash_out[i]),
                 .hash_valid(cl_hash_valid[i])
             );
         end
@@ -109,23 +114,38 @@ module sha256_reduced
     typedef enum {
         IDLE,
         ITERATE,
-        WAIT,
+        SINGLE,
         FINALIZE
     } state_t;
 
     state_t state;
 
     task automatic clSequence(input logic [1:0] select);
-        cl_start <= 4'b0001 << select; // Activate the selected compression loop
-        if (cl_load_done[select]) begin
-            cl_select <= {cl_select[num_loops-2:0], cl_select[num_loops-1]}; // Rotate select signal
-            cl_block_count <= cl_block_count + 1; // Increment block count
-        end else if (cl_hash_valid[select]) begin
-            internal_hash <= internal_hash + cl_internal_hash[select]; // Update internal hash
-            cl_hash_ack[select] <= 1'b1; // Acknowledge hash output
+
+        if (compression_busy || cl_finalize) begin
+            cl_start <= 4'b0; // If busy, do not start any compression loop
         end else begin
-            cl_hash_ack[select] <= 1'b0;
+            cl_start <= 4'b0001 << select; // Activate the selected compression loop
         end
+
+        // Check if the selected compression loop has completed loading
+        if (cl_load_done[select] && cl_block_count != block_count) begin
+            cl_select <= {cl_select[num_loops-2:0], cl_select[num_loops-1]}; // Rotate select signal
+            cl_block_count <= cl_block_count + 1; // Increment block count 
+
+        // Check if the selected compression loop is done with compression
+        end else if (cl_hash_valid[0]) begin
+            //cl_select <= {cl_select[num_loops-2:0], cl_select[num_loops-1]}; // Rotate select signal
+            cl_init_hash <= 1'b1; // Initialize internal hash if valids
+        end 
+
+        if (cl_block_count == block_count && cl_compression_busy == 4'b0) begin
+            cl_finalize <= 1'b1; // Set finalize signal when all blocks are processed
+            cl_start <= 4'b0;
+        end else begin
+            cl_finalize <= 1'b0; // Reset finalize signal otherwise
+        end
+
     endtask
 
     always_ff @(posedge clk or negedge rst_n) begin
@@ -133,26 +153,51 @@ module sha256_reduced
             state <= IDLE;
             cl_block_count <= 4'b0; // Reset block count
             cl_start <= 4'b0; // Reset compression loop start signals
-            cont <= 1'b1;
             cl_select <= 4'b1; // Start with first compression loop
             hash_ready <= 1'b0; // Reset hash ready signal
+            cl_init_hash <= 1'b0; // Initialize internal hash
+            cl_finalize <= 1'b0; // Reset finalize signal
+            block_count <= 4'b0; // Reset block count
             internal_hash <= 256'h6a09e667bb67ae853c6ef372a54ff53a510e527f9b05688c1f83d9ab5be0cd19; // Initial hash value
         end else begin
             case (state)
                 IDLE: begin
-                    if (enable && mc_done) begin
-                        state <= ITERATE; // Move to iterate state when ready
-                        cl_block_remainder <= num_blocks % num_loops; // Initialize block remainder
+                    state <= IDLE;
+                    cl_block_count <= 4'b0; // Reset block count
+                    cl_start <= 4'b0; // Reset compression loop start signals
+                    cl_select <= 4'b1; // Start with first compression loop
+                    hash_ready <= 1'b0; // Reset hash ready signal
+                    cl_init_hash <= 1'b0; // Initialize internal hash
+                    cl_finalize <= 1'b0; // Reset finalize signal
+                    block_count <= num_blocks; // Set block count from message controller
+                    internal_hash <= 256'h6a09e667bb67ae853c6ef372a54ff53a510e527f9b05688c1f83d9ab5be0cd19; // Initial hash value
+                    if (enable && mc_done && block_count != 4'b0) begin
+                        state <= ITERATE;                               // Move to iterate state when ready
+                    end else if (enable && mc_done && block_count == 4'b0) begin
+                        state <= SINGLE; // Move to single state if no blocks to process
+                        block_count <= 4'b1; // Set block count to 1 for single block processing
                     end else begin
                         state <= IDLE; // Stay in idle if not enabled or not done
                     end
                 end
-
                 ITERATE: begin
-                    if (cl_block_count < num_blocks) begin
-                        if (cl_compression_busy == 4'b1111 && cl_load_done[3] == 1'b1) begin
+                    // Check current block count based on number of blocks
+                    if (cl_finalize) begin
+                        state <= FINALIZE;
+                        case (cl_select)
+                            4'b0001: internal_hash <= cl_internal_hash[1]; // Finalize hash
+                            4'b0010: internal_hash <= cl_internal_hash[2]; // Finalize hash
+                            4'b0100: internal_hash <= cl_internal_hash[3]; // Finalize hash
+                            4'b1000: internal_hash <= cl_internal_hash[0]; // Finalize hash
+                            default: cl_start <= 4'b0; // No compression loop active
+                        endcase
+                    end else if (cl_block_count <= block_count) begin
+                        // Check if all compression loops are busy, and if the last loop has completed loading
+                        if (cl_compression_busy == 4'b1111 && cl_load_done[num_loops-1] == 1'b1 && cl_block_count != block_count) begin
+                            // Start back at first compression loop
                             cl_select <= 4'b1;
                             cl_start <= 4'b0;
+                            cl_block_count <= cl_block_count + 1; // Increment block count
                         end else begin
                             // Start compression loop based on select signal
                             case (cl_select)
@@ -164,15 +209,34 @@ module sha256_reduced
                             endcase
 
                         end
-                    end
-                    else if (cl_block_count == num_blocks) begin
+                    end 
+                end
+
+                SINGLE: begin
+                    // If one block needs to be processed, start the first compression loop
+                    if (cl_finalize) begin
                         state <= FINALIZE;
-                        cont <= 0;
+                        internal_hash <= cl_internal_hash[1]; // Use initial hash for single block
+                    end else begin
+                        cl_start <= 4'b0001; // Start first compression loop
+                        cl_select <= 4'b0001; // Select first compression loop
+                        if (cl_load_done[0] && cl_block_count != block_count) begin
+                            cl_block_count <= cl_block_count + 1; // Increment block count 
+                        end
+                        if (cl_block_count == block_count && cl_compression_busy == 4'b0) begin
+                            cl_finalize <= 1'b1; // Set finalize signal when all blocks are processed
+                            cl_start <= 4'b0;
+                        end else begin
+                            cl_finalize <= 1'b0; // Reset finalize signal otherwise
+                        end
                     end
                 end
                 
                 FINALIZE: begin
                     hash_ready <= 1'b1; // Indicate hash is ready
+                    if (hash_counter == 3'b111) begin
+                        state <= IDLE; // Reset to idle state after finalizing
+                    end 
                 end
                 
                 default: state <= IDLE; // Default case to reset to idle state
@@ -205,8 +269,27 @@ module sha256_reduced
             end
         endcase
     end
+
+    // Connect the hash chain using assign statements
+    always_comb begin
+        // First loop uses the initial/current internal hash
+        cl_internal_hash[0] = (cl_init_hash) ? cl_output_hash : internal_hash;
+        cl_hash_ack[0] = (cl_init_hash) ? cl_hash_valid[num_loops-1] : 1'b1; // Acknowledge hash output for first loop
+        
+        // Chain the hash outputs for intermediate loops
+        for (int j = 1; j < num_loops; j++) begin
+            cl_internal_hash[j] = cl_hash_out[j-1];
+            cl_hash_ack[j] = cl_hash_valid[j-1];
+        end
+
+    end
+
+    // Final output hash comes from the last compression loop
+    assign cl_output_hash = cl_hash_out[num_loops-1];
+
     assign compression_busy = &cl_compression_busy;
 
+    assign cont = ((cl_block_count < block_count) ? 1'b1 : 1'b0); // Continue signal for message controller
     // Output hash in 32-bit chunks using hash_counter
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin

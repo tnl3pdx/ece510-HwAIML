@@ -17,9 +17,10 @@ module compression_loop_parity (
     output logic        load_done,      // Indicates loading is done
 
     // Hash Output Interface
-    input  logic        hash_ack,       // Acknowledge signal for hash output
-    output logic [255:0] hash_out,      // Final hash output
-    output logic        hash_valid     // Indicates hash is valid
+    input  logic [255:0]    prev_hash,
+    input  logic            hash_ack,       // Acknowledge signal for hash output
+    output logic [255:0]    hash_out,      // Final hash output
+    output logic            hash_valid     // Indicates hash is valid
     
 );
 
@@ -87,7 +88,7 @@ module compression_loop_parity (
     
     // Working variables and hash values
     logic [31:0] a, b, c, d, e, f, g, h;
-    logic [31:0] h0, h1, h2, h3, h4, h5, h6, h7;
+    logic [31:0] h0, h1, h2, h3, h4, h5, h6, h7; // Initial hash values
     
     // Counters and control signals
     logic [3:0]  current_block;
@@ -98,6 +99,7 @@ module compression_loop_parity (
     // Temporary variables for compression
     logic [31:0] temp1, temp2;
     logic [31:0] extend_W [0:3];    // Temporary storage for W schedule extension
+    logic hash_saved; // Flag to indicate if hash is saved
     
     // Helper functions (implemented as functions to keep the code clean)
     function automatic logic [31:0] ch(logic [31:0] x, logic [31:0] y, logic [31:0] z);
@@ -150,16 +152,23 @@ module compression_loop_parity (
             extend_phase <= 3'b0;
             hash_out <= 256'b0; 
             load_done <= 1'b0;
-            
-            // Initialize hash values (first block)
-            h0 <= 32'h6a09e667;
-            h1 <= 32'hbb67ae85;
-            h2 <= 32'h3c6ef372;
-            h3 <= 32'ha54ff53a;
-            h4 <= 32'h510e527f;
-            h5 <= 32'h9b05688c;
-            h6 <= 32'h1f83d9ab;
-            h7 <= 32'h5be0cd19;
+            hash_saved <= 1'b0;
+            h0 <= 32'b0;
+            h1 <= 32'b0;
+            h2 <= 32'b0;
+            h3 <= 32'b0;
+            h4 <= 32'b0;
+            h5 <= 32'b0;
+            h6 <= 32'b0;
+            h7 <= 32'b0;
+            a <= 32'b0;
+            b <= 32'b0;
+            c <= 32'b0;
+            d <= 32'b0;
+            e <= 32'b0;
+            f <= 32'b0;
+            g <= 32'b0;
+            h <= 32'b0;
         end else begin
             state <= next_state;
             
@@ -174,20 +183,10 @@ module compression_loop_parity (
                         req_word <= 1'b0;
                         kSel <= 6'b0;
                         extend_phase <= 3'b0;
-                        hash_out <= 256'b0; 
-                        h0 <= 32'h6a09e667;
-                        h1 <= 32'hbb67ae85;
-                        h2 <= 32'h3c6ef372;
-                        h3 <= 32'ha54ff53a;
-                        h4 <= 32'h510e527f;
-                        h5 <= 32'h9b05688c;
-                        h6 <= 32'h1f83d9ab;
-                        h7 <= 32'h5be0cd19;
+                        hash_out <= 256'b0;
+                        load_done <= 1'b0;
+                        hash_saved <= 1'b0; 
                     end
-                    if (hash_ack) begin
-                        hash_valid <= 1'b0; // Reset hash valid on ack
-                    end
-
                 end
                 
                 LOAD_SCHEDULE: begin
@@ -229,32 +228,53 @@ module compression_loop_parity (
                 end
                 
                 COMPRESS: begin
-                    if (round_counter == 0) begin
-                        // Initialize working variables
-                        a <= h0; b <= h1; c <= h2; d <= h3;
-                        e <= h4; f <= h5; g <= h6; h <= h7;
-                        round_counter <= round_counter + 1;
-                    end else if (round_counter >= 65) begin
-                        busy <= 1'b0;
-                    end else begin                      
-                        if (round_counter <= 64) begin
-                            h <= g;
-                            g <= f;
-                            f <= e;
-                            e <= d + temp1;
-                            d <= c;
-                            c <= b;
-                            b <= a;
-                            a <= temp1 + temp2;
-                            kSel <= kSel + 1;
+                    if (hash_ack == 1'b1 && hash_saved == 1'b0) begin
+                        h0 <= prev_hash[255:224];
+                        h1 <= prev_hash[223:192];
+                        h2 <= prev_hash[191:160];
+                        h3 <= prev_hash[159:128];
+                        h4 <= prev_hash[127:96];
+                        h5 <= prev_hash[95:64];
+                        h6 <= prev_hash[63:32];
+                        h7 <= prev_hash[31:0];
+
+                        hash_saved <= 1'b1;
+
+                    end else if (hash_saved == 1'b1) begin
+                        if (round_counter == 0) begin
+                            // Initialize hash values
+                            a <= h0;
+                            b <= h1;
+                            c <= h2;
+                            d <= h3;
+                            e <= h4;
+                            f <= h5;
+                            g <= h6;
+                            h <= h7;
+
+                            round_counter <= round_counter + 1;
+                        end else if (round_counter >= 65) begin
+                            busy <= 1'b0;
+                        end else begin                      
+                            if (round_counter <= 64) begin
+                                h <= g;
+                                g <= f;
+                                f <= e;
+                                e <= d + temp1;
+                                d <= c;
+                                c <= b;
+                                b <= a;
+                                a <= temp1 + temp2;
+                                kSel <= kSel + 1;
+                            end
+                            round_counter <= round_counter + 1;
                         end
-                        round_counter <= round_counter + 1;
                     end
                 end
                 
                 FINALIZE: begin
                     // Combine hash values for final output
-                    hash_out <= {a, b, c, d, e, f, g, h};
+                    hash_out <= {h0+a, h1+b, h2+c, h3+d, h4+e, h5+f, h6+g, h7+h};
                     hash_valid <= 1'b1;
                     busy <= 1'b0;
                 end

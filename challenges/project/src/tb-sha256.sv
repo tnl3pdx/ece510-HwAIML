@@ -3,7 +3,7 @@
 
 module tb_sha256();
     // Parameters
-    parameter CLK_PERIOD = 10;    // Clock period in nanoseconds
+    parameter CLK_PERIOD = 15;    // Clock period in nanoseconds
     
     // DUT Signals
     logic           clk;
@@ -105,7 +105,7 @@ module tb_sha256();
         // Variables to collect hash blocks
         int block_count = 0;
         int timeout_cycles = 0;
-        int max_timeout = 1000; // Maximum cycles to wait for complete hash
+        int max_timeout = 10000; // Maximum cycles to wait for complete hash
         
         // Initialize received hash and flag
         received_hash = 0;
@@ -131,6 +131,8 @@ module tb_sha256();
             hash_received = 1;
             $display("Complete 256-bit hash collected");
         end
+
+        @(posedge clk);
     endtask
 
     task automatic formatVerify(input bit [255:0] expected);
@@ -180,27 +182,32 @@ module tb_sha256();
 
         // Reset DUT
         reset();
-	/*
+
+/*
+        test_message = "YxwTU;Y.9?#";
+        expected_hash = 256'hc21919e5b04c8a06164b68bd57293a97c7ef18d7371feea68f3872cdcb23b743;
+
+        testSequence(test_message, expected_hash);
+        reset();
+    
+
         test_message = "YxwTU;Y.9?#Z8]]Tvs(DW?{R-1r6/V.}/qa,CH5Y[Fq6{z}&P{=-KHkk";
         expected_hash = 256'h2b9a7bd7ff27dbc3031b4d236dd58604411ef5e16d0324226ab360c9b3cf3818;
 
         testSequence(test_message, expected_hash);
+        reset();
 
         test_message = "YxwTU;Y.9?#Z8]]Tvs(DW?{R-1r6/V.}/qa,CH5Y[Fq6{z}&P{=-KHkkssssssssssssssssssssssssssdddawadddddddddddddddddddddddddddddddddwd";
         expected_hash = 256'h03aecb55e5fca4a2154fe712b6fd25ab53d49d0a67483ffae13525e8946f3899;
 
         testSequence(test_message, expected_hash);
-	*/
+        reset();
+*/
         test_message = "rem ipsum dolor sit amet, consectetur adipiscing elit. Nunc feugiat purus at odio pretium, et condimentum enim interdum. Ut faucibus placerat arcu, ac mollis enim tincidunt a. Mauris sed gravida massa, vel aliquam enim. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. In hac habitasse platea dictumst. Duis at faucibus nisi. Integer leo ipsum, lobortis ac leo vel, fringilla vestibulum turpis. Donec aliquam cursus odio ac viverra. Quisque sollicitudin, est non aliquet laoreet, felis ligula viverra arcu, sed ultricies mi urna at mi.  Vivamus vel commodo turpis. Sed hendrerit commodo est et tempor. Donec fermentum enim at malesuada dictum. Nulla blandit ullamcorper pellentesque. Pellentesque id finibus mauris. Morbi congue est vel purus congue maximus. Donec ac ipsum pharetra, commodo ante a, luctus ipsum. Ut aliquam libero erat, at porta metus viverra id. In ac diam et odio placerat vestibulum. Pdddddddddddddd";
         expected_hash = 256'h72f9e20f6408e16ea9e08b9c82e299519aea38713fc1379b99b39441b2143e4e;
 
         testSequence(test_message, expected_hash);
-	/*
-        test_message = "YxwTU;Y.9?#";
-        expected_hash = 256'hc21919e5b04c8a06164b68bd57293a97c7ef18d7371feea68f3872cdcb23b743;
-
-        testSequence(test_message, expected_hash);
-	*/
+        reset();
         // Check if any test failed
         if (iffail) begin
             $display("A Test failed, check the output above for details.");
