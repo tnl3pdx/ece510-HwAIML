@@ -46,12 +46,12 @@ module sha256_reduced
 
     logic [num_loops-1:0]   cl_start;               // Start signal
     logic [num_loops-1:0]   cl_compression_busy;                // Busy signal  
-    logic [3:0]             cl_word_address [num_loops];        // Address signal
+    logic [3:0][num_loops]             cl_word_address;        // Address signal
     logic                   cl_req_word [num_loops];            // Request signal   
     logic [3:0]             cl_current_block [num_loops];       // Current block index for each loop
     logic                   cl_load_done [num_loops];            // Load done signal for each loop
 
-    logic [3:0]             cl_hash_ack;                        // Acknowledge signal for hash output
+    logic [num_loops-1:0]   cl_hash_ack;                        // Acknowledge signal for hash output
     logic [255:0]           cl_internal_hash [num_loops];       // Internal hash output for each loop
     logic [255:0]           cl_hash_out [num_loops];            // Individual hash outputs
     logic [255:0]           cl_output_hash;                     // Output hash from last compression loop

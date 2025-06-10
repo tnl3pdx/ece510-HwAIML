@@ -3,7 +3,7 @@
   "VERILOG_FILES": ["dir::converted/sha256_reduced.v", "dir::converted/message_controller.v",
     "dir::converted/compression_loop_parity.v", "dir::converted/k_rom.v",
     "dir::converted/msg_ram.v", "dir::converted/w_ram_half.v"],
-  "CLOCK_PERIOD": 2,
+  "CLOCK_PERIOD": 15,
   "CLOCK_PORT": "clk",
 
   "RUN_ANTENNA_REPAIR": true,
