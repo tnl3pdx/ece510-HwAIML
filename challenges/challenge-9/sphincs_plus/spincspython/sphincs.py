@@ -9,16 +9,16 @@ import hashlib
 
 from spincspython.adrs import ADRS
 from spincspython.profiler import Profiler
+from spincspython.messagetracker import MessageLengthTracker
 
 #prof_tool = Profiler(output_dir="my_profiles", exclude_patterns=["*.ADRS.*", "*.chain", "*.hash", "*.prf", "*treehash"])
 prof_tool = Profiler(output_dir="my_profiles")
 
-longLength = 0
+msg_tracker = MessageLengthTracker()
 iterations = 0
                      
 # TWEAKABLES & UTILS
 def hash(seed, adrs: ADRS, value, digest_size):
-    global longLength
     m = hashlib.sha256()
 
     '''
@@ -26,11 +26,10 @@ def hash(seed, adrs: ADRS, value, digest_size):
     m.update(adrs.to_bin())
     m.update(value)
     '''
-    if (longLength < len(seed+adrs.to_bin()+value)):
-        longLength = len(seed+adrs.to_bin()+value)
-        print(f"Long (bytes): {(seed+adrs.to_bin()+value).hex()}\n")
+    hash_input = seed+adrs.to_bin()+value
+    msg_tracker.record(hash_input, print_long=False)
     
-    m.update(seed+adrs.to_bin()+value)
+    m.update(hash_input)
     
     hashed = m.digest()[:digest_size]
     
@@ -172,9 +171,10 @@ class Sphincs():
         for i in sig_tab[2]:  # SIG Hypertree
             sig += i
 
-        global longLength, iterations
-        print("Length of the longest input message: ", longLength)
-        print("Number of iterations: ", iterations)
+        global msg_tracker
+        msg_tracker.print_summary(also_save=False)
+        msg_tracker.save_stats("sphincs_signature_stats.json")
+        msg_tracker.save_all_lengths("sphincs_signature_stats.txt")
         
         return sig
 
@@ -548,8 +548,6 @@ class Sphincs():
 
             node = self.xmss_pk_from_sig(idx_leaf, sig_tmp, node, public_seed, adrs)
             
-        global longLength
-        print("Length of the longest input message: ", longLength)
         
         if node == public_key_ht:
             return True
