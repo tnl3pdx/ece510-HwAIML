@@ -1,10 +1,10 @@
 # Challenge 9: Final Project Decision and Introduction
 
-This challenge will be a introduction into researching and choosing a final project for the term. The project I chose is to develop an RL accelerator that can improve the speed of SPHINCS+ signature algorithm. This code is based on the work of this Git repository:
+This challenge will be a introduction into researching and choosing a final project for the term. The project I chose is to develop a hash accelerator that can improve the speed of SPHINCS+ signature algorithm. This code is based on the work of this Git repository:
 
 [SPINCS-PYTHON](https://github.com/tottifi/sphincs-python)
 
-Before selecting this project, I tried to look into a RL-based PCB component placer program, but I faced several issues involving the code provided by the paper and training time in general. 
+Before selecting this project, I tried to look into an RL-based PCB component placer program, but I faced several issues involving the code provided by the paper and training time in general. 
 
 My second attempt involved looking into RL racing training and optimizing the intensive functions using hardware, however the code was heavily reliant on libraries from SB3 which resulted in difficulty of determining what functions were the root bottlenecks.
 
