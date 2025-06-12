@@ -26,7 +26,6 @@ module sha256_reduced
     logic [255:0]   internal_hash;     // Internal hash output from compression loop
     logic           hash_ready;        // Indicates if hash is ready to be outputted
     logic [2:0]     hash_counter;      // Counter for hash output cycles
-    logic           hash_ack;          // Acknowledge signal for hash output
 
     logic           mc_done;           // Indicates if message controller is done
     logic           compression_busy;  // Indicates if compression is busy
@@ -34,13 +33,8 @@ module sha256_reduced
     logic [31:0]    word_data;         // Data for word access
     logic           word_valid;        // Indicates if word from message controller is valid
 
-
-
-
-
     logic [7:0]     word_address;      // Address for word access
     logic           req_word;          // Request signal from compression loop
-    logic [3:0]     current_block;     // Current block index
 
     // Parallel control signals
 
@@ -48,7 +42,6 @@ module sha256_reduced
     logic [num_loops-1:0]   cl_compression_busy;                // Busy signal  
     logic [3:0][num_loops]             cl_word_address;        // Address signal
     logic                   cl_req_word [num_loops];            // Request signal   
-    logic [3:0]             cl_current_block [num_loops];       // Current block index for each loop
     logic                   cl_load_done [num_loops];            // Load done signal for each loop
 
     logic [num_loops-1:0]   cl_hash_ack;                        // Acknowledge signal for hash output
@@ -99,7 +92,6 @@ module sha256_reduced
                 .busy(cl_compression_busy[i]),
                 .word_address(cl_word_address[i]),
                 .req_word(cl_req_word[i]),
-                .block_count(cl_current_block[i]),
                 .load_done(cl_load_done[i]),
 
                 .prev_hash(cl_internal_hash[i]),
@@ -294,16 +286,12 @@ module sha256_reduced
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             hash_counter <= 3'b0;
-            hash_ack <= 1'b0;
         end else if (hash_valid) begin
             if (hash_counter < 3'b111) begin
                 hash_counter <= hash_counter + 1;
-            end else begin
-                hash_ack <= 1'b1; // Acknowledge hash output
-            end
+            end 
         end else begin
             hash_counter <= 3'b0; // Reset counter if not valid
-            hash_ack <= 1'b0; // Acknowledge hash output
         end   
     end
     assign hash_valid = (hash_counter <= 3'b111 && enable && hash_ready) ? 1'b1 : 1'b0;

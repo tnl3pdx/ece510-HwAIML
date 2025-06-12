@@ -189,8 +189,11 @@ module tb_sha256();
 
         testSequence(test_message, expected_hash);
         reset();
-    
+*/
 
+        
+    
+/*
         test_message = "YxwTU;Y.9?#Z8]]Tvs(DW?{R-1r6/V.}/qa,CH5Y[Fq6{z}&P{=-KHkk";
         expected_hash = 256'h2b9a7bd7ff27dbc3031b4d236dd58604411ef5e16d0324226ab360c9b3cf3818;
 
@@ -202,12 +205,32 @@ module tb_sha256();
 
         testSequence(test_message, expected_hash);
         reset();
-*/
+
         test_message = "rem ipsum dolor sit amet, consectetur adipiscing elit. Nunc feugiat purus at odio pretium, et condimentum enim interdum. Ut faucibus placerat arcu, ac mollis enim tincidunt a. Mauris sed gravida massa, vel aliquam enim. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. In hac habitasse platea dictumst. Duis at faucibus nisi. Integer leo ipsum, lobortis ac leo vel, fringilla vestibulum turpis. Donec aliquam cursus odio ac viverra. Quisque sollicitudin, est non aliquet laoreet, felis ligula viverra arcu, sed ultricies mi urna at mi.  Vivamus vel commodo turpis. Sed hendrerit commodo est et tempor. Donec fermentum enim at malesuada dictum. Nulla blandit ullamcorper pellentesque. Pellentesque id finibus mauris. Morbi congue est vel purus congue maximus. Donec ac ipsum pharetra, commodo ante a, luctus ipsum. Ut aliquam libero erat, at porta metus viverra id. In ac diam et odio placerat vestibulum. Pdddddddddddddd";
         expected_hash = 256'h72f9e20f6408e16ea9e08b9c82e299519aea38713fc1379b99b39441b2143e4e;
 
+        // 64-byte message
+        test_message = "_Lb+K/-}H5ZGqw5vnaViQ:1te5tX_%wagDn{=vD8=MZZcE!;(Ux(?KV049frB9cd";
+        expected_hash = 256'he922c38a55452fb604afb3e1d40c2d64398d0ef3d861007e8deabab04e9534b4;
+
+        // 80-byte message
+        test_message = "(*qzEv,:hKCgwYdTQ)4j6dpJ]9U?0GL}AK#HhaXF(;qR]Y8]QVzCH!a$&*1R20e[Wyyj[cgL4kn&bZ]a";
+        expected_hash = 256'hc144346b786abb7c47a509b05ce9a27224e9a5881f58cc0c5be37179767715c8;
+
+
+
+        // 608-byte message
+        test_message = "h0b[t-S*Hjx)]8ax8GeN&4A*_54hAN[t3Nn3un2&kq0ej*enpr#j@Q,&NkP?wg9x+GHeDSf}[mBQw651vN9;*M&az9X_N@%p9)]&+?.HQTQb[06=p9NY@_]TiH2eFQ#%ZvmS4SE.SHSn2j%:r98,yJ0%;Q&cyv9{$8p3@xJvGLJgVFeJ3m//[/5R[;FT}X!Sg#JthBCnj$=XTapEL&(=SR8zQGwB2wvca/8Y)r)*+rH=q=[Zp*aw9ux,!SghzrSCX-5N{TZ}/.]NDax[;hD1rZ*vyvE?w(m-}TD,(pDf,;T1Zi%kR!mvuELzty)F2z,55,U$NKpXW$g/F@X;,r!a$(H(;GefAC([TPGR}E8$P@c84h/uG&8cSW(egVg[hLi*NrBraBb!CB#g5A##anB_#Pf2U4WTvb8k[d4j,=4;NC-xJz$UCRVZJiDd7!Hi&{GzV{&Nzp$3ef8ukG6u==z$mWDw7ymA0Ceay;ZgxX%2vVabbNHw%iXc93_a3,[X-/3@6i9_2y:DbpvjKnxt(eCEiRcKnF4i:Y6*X!7#X?_Mh{x_T5hdnz!:}cek!d=kqfv5Cd:n%z&ZpfEu)iXLKJh;eiuA80emrDQj";
+        expected_hash = 256'h0fc26ea3d1800b463b4b599bb0e8ac46fa91fc16c3cf9bf3cba32ca7927ab8dd;
+*/
+
+        // 208-byte message
+        test_message = "9?vDKF]dkCff(uw?@*J+MC9F1fTm&hnZ0[&MC.K3HX*W7SjHBiynq-iq-a{Y{L8ur5gbSPif:L3bV+_w]Py7m6]wBXe_3Pru@h(BB;5upRM_-3+=mrA0*(_bRj0[NWQPcTj%_bMw=z*dV!5Eb@UxC0G.V,2:@bjfdX)&9xpxBT]FF1H!8@.WHh:{gcNN6aq$v/t/5F77{ZnRg,[j";
+        expected_hash = 256'hd48a052ba90eb30789b185a184cb53401d7bdb007a5e4b449be7565f5cfe86ba;
+        
         testSequence(test_message, expected_hash);
         reset();
+
         // Check if any test failed
         if (iffail) begin
             $display("A Test failed, check the output above for details.");

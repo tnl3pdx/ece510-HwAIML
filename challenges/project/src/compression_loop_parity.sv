@@ -13,7 +13,6 @@ module compression_loop_parity (
     output logic        busy,            // Signal to indicate compression loop is busy
     output logic [3:0]  word_address,   // Address for word access
     output logic        req_word,       // Request signal for word data
-    output logic [3:0]  block_count,    // Current block index
     output logic        load_done,      // Indicates loading is done
 
     // Hash Output Interface
@@ -84,14 +83,11 @@ module compression_loop_parity (
         .rdata2(read_data2_o)
     );
 
-    logic [31:0] switch_read_data; // Read data from both memories
-    
     // Working variables and hash values
     logic [31:0] a, b, c, d, e, f, g, h;
     logic [31:0] h0, h1, h2, h3, h4, h5, h6, h7; // Initial hash values
     
     // Counters and control signals
-    logic [3:0]  current_block;
     logic [6:0]  schedule_counter;
     logic [6:0]  round_counter;
     logic [2:0]  extend_phase;
@@ -144,14 +140,12 @@ module compression_loop_parity (
             state <= IDLE;
             busy <= 1'b0;
             hash_valid <= 1'b0;
-            current_block <= 4'b0;
             schedule_counter <= 7'b0;
             round_counter <= 7'b0;
-            req_word <= 1'b0;
+            //req_word <= 1'b0;
             kSel <= 6'b0;
             extend_phase <= 3'b0;
             hash_out <= 256'b0; 
-            load_done <= 1'b0;
             hash_saved <= 1'b0;
             h0 <= 32'b0;
             h1 <= 32'b0;
@@ -177,34 +171,27 @@ module compression_loop_parity (
                     if (start) begin
                         busy <= 1'b1;
                         hash_valid <= 1'b0;
-                        current_block <= 4'b0;
                         schedule_counter <= 7'b0;
                         round_counter <= 7'b0;
-                        req_word <= 1'b0;
+                        //req_word <= 1'b0;
                         kSel <= 6'b0;
                         extend_phase <= 3'b0;
                         hash_out <= 256'b0;
-                        load_done <= 1'b0;
                         hash_saved <= 1'b0; 
                     end
                 end
                 
                 LOAD_SCHEDULE: begin
-                    if (schedule_counter < 16) begin
-                        req_word <= 1'b1;
-                        
+                    if (schedule_counter < 16) begin    
+                        //req_word <= 1'b1;
                         if (word_valid) begin
                             // Only increment counter when valid data arrives
                             schedule_counter <= schedule_counter + 1;
                         end
-                    end else begin
-                        req_word <= 1'b0;
-                        load_done <= 1'b1; // Indicate loading is done
-                    end
+                    end 
                 end
                 
                 EXTEND_SCHEDULE: begin
-                    load_done <= 1'b0;
                     extend_phase <= extend_phase + 1;
                     case (extend_phase)
                         0: begin
@@ -284,24 +271,22 @@ module compression_loop_parity (
             endcase
         end
     end
-
-    assign block_count = current_block;
-    
+    assign load_done = (state == LOAD_SCHEDULE && schedule_counter >= 16) ? 1'b1 : 1'b0;
+    assign req_word = (state == LOAD_SCHEDULE && schedule_counter < 16) ? 1'b1 : 1'b0;
 
     // Combinational logic for hash calculation
     always_comb begin
         temp1 = 32'bz;
         temp2 = 32'bz;
-        switch_read_data = 32'bz;
         // Perform calulation
         if (state == COMPRESS) begin
             if (round_counter[0] == 1'b1) begin
-                switch_read_data = read_data1_e;
+                temp1 = h + sigma1(e) + ch(e, f, g) + kBus + read_data1_e;
+                temp2 = sigma0(a) + maj(a, b, c);
             end else begin
-                switch_read_data = read_data1_o;
+                temp1 = h + sigma1(e) + ch(e, f, g) + kBus + read_data1_o;
+                temp2 = sigma0(a) + maj(a, b, c);
             end
-            temp1 = h + sigma1(e) + ch(e, f, g) + kBus + switch_read_data;
-            temp2 = sigma0(a) + maj(a, b, c);
         end
     end
 
@@ -321,9 +306,9 @@ module compression_loop_parity (
         read_addr1_o = 5'bz;
         read_addr2_o = 5'bz;
 
-        word_address = 8'bz;
+        word_address = 4'bz;
         if (state == LOAD_SCHEDULE) begin
-            word_address = schedule_counter[3:0];   // {current_block, schedule_counter[4:0]} for first 16 words
+            word_address = schedule_counter[3:0];   // schedule_counter[4:0] for first 16 words
 
             // Check paritiy of last bit of schedule_counter to determine which memory to write to
             if (word_valid) begin
@@ -403,6 +388,10 @@ module compression_loop_parity (
             
             FINALIZE: begin
                 next_state = IDLE;
+            end
+
+            default: begin
+                next_state = IDLE; // Default case to handle unexpected states
             end
         endcase
     end

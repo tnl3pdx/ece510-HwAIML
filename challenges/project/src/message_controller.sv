@@ -133,9 +133,10 @@ module message_controller (
                 end
                 
                 PROVIDE_DATA: begin
-                    if (req_word && word_valid) begin
-                        block_section <= block_section + 1;
-                    end
+                    if (req_word) begin
+                        // Read data from memory buffer
+                        block_section <= (block_section <= 4'b1111) ? block_section + 1 : block_section;
+                    end 
                 end
             endcase
         end
@@ -147,35 +148,36 @@ module message_controller (
     always_comb begin
         // Default assignments
         enable_write = 1'b0;
-        read_addr = 8'bz;
         write_data = 8'bz;
-        word_data = 32'h0;
-        word_valid = 1'b0;
-        if (state == RECEIVE) begin
-            // Write data to memory buffer
-            enable_write = 1'b1;
-            write_data = data_in;
-        // Padding values to write data if in PADDING state
-        end else if (state == PADDING) begin
-            enable_write = 1'b1;
-            if (padding_phase == 0)
-                write_data = 8'h80;
-            else
-                write_data = 8'h00;
-        end else if (state == LENGTH_APPEND) begin
-            enable_write = 1'b1;
-            if (length_phase == 6)
-                write_data = {3'b000, temp_msgLen[12:8]};
-            else if (length_phase == 7)
-                write_data = temp_msgLen[7:0];      
-            else
-                write_data = 8'h00;
-        end else if (state == PROVIDE_DATA) begin
-            // Read data from memory buffer
-            read_addr = word_address;
-            word_data = read_data;
-            word_valid = req_word;
-        end 
+        case (state)
+            RECEIVE: begin
+                // Write data to memory buffer
+                enable_write = 1'b1;
+                write_data = data_in;
+            end
+            PADDING: begin
+                enable_write = 1'b1;
+                if (padding_phase == 0)
+                    write_data = 8'h80;
+                else
+                    write_data = 8'h00;
+                end
+            LENGTH_APPEND: begin
+                enable_write = 1'b1;
+                if (length_phase == 6)
+                    write_data = {3'b000, temp_msgLen[12:8]};
+                else if (length_phase == 7)
+                    write_data = temp_msgLen[7:0];      
+                else
+                    write_data = 8'h00;
+            end
+            PROVIDE_DATA: begin
+                word_valid = req_word;
+                read_addr = word_address;
+                word_data = (word_valid) ? read_data : 32'hz;
+            end
+
+        endcase
     end
     
     // Next state logic
@@ -202,7 +204,7 @@ module message_controller (
                 if (!busy) next_state = PROVIDE_DATA;
             end
             PROVIDE_DATA: begin
-                if ((block_section == 4'b1111) && done) begin
+                if ((block_section >= 4'b1111) && done && !req_word) begin
                     if (cont) begin
                         next_state = READY;
                     end else begin
