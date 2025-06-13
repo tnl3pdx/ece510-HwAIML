@@ -1,11 +1,12 @@
 # Challenge 15: HDL Implementation of SHA256
 
-In this challenge, I will be attempting to implement the SHA256 algorithm in SystemVerilog. 
+In this challenge, I will be attempting to implement the SHA256 algorithm in SystemVerilog. A more detailed breakdown of the design process can be found here in the GitHub wiki: [Link](https://github.com/tnl3pdx/ece510-HwAIML/wiki/Project:-HDL-Design)
 
+[Log for Challenge 15](https://docs.google.com/document/d/1TXhw_uN92E7qQL4AKYyvfFJKGBJSrO0QV7ZzP2ZYrUA/edit?tab=t.0#heading=h.madagifzghmc)
 
 # Tools
 
-For tools, I will be use Icarus for compiling my code, and GTKWave to visualize waveforms. To install these, use the following command:
+For tools, I will be using QuestaSim for simulation and testing. The reason for my choice of Questa is that Questa's GUI is easier to use for larger designs, and I have experience with the software in the past. This software does require a license; however, there are open-source alternatives such as Icarus for compiling and simulation, and GTKWave can be used to visualize waveforms. To install these, use the following command:
 
     sudo apt install iverilog gtkwave
 
