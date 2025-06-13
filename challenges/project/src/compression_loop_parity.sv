@@ -11,7 +11,6 @@ module compression_loop_parity (
     input  logic        word_valid,     // Indicates if word from message controller is valid
     
     output logic        busy,            // Signal to indicate compression loop is busy
-    output logic [3:0]  word_address,   // Address for word access
     output logic        req_word,       // Request signal for word data
     output logic        load_done,      // Indicates loading is done
 
@@ -96,6 +95,8 @@ module compression_loop_parity (
     logic [31:0] temp1, temp2;
     logic [31:0] extend_W [0:3];    // Temporary storage for W schedule extension
     logic hash_saved; // Flag to indicate if hash is saved
+    logic delay_save; // Flag to delay saving from memory
+
     
     // Helper functions (implemented as functions to keep the code clean)
     function automatic logic [31:0] ch(logic [31:0] x, logic [31:0] y, logic [31:0] z);
@@ -142,11 +143,11 @@ module compression_loop_parity (
             hash_valid <= 1'b0;
             schedule_counter <= 7'b0;
             round_counter <= 7'b0;
-            //req_word <= 1'b0;
             kSel <= 6'b0;
             extend_phase <= 3'b0;
             hash_out <= 256'b0; 
             hash_saved <= 1'b0;
+            delay_save <= 1'b0;
             h0 <= 32'b0;
             h1 <= 32'b0;
             h2 <= 32'b0;
@@ -173,18 +174,19 @@ module compression_loop_parity (
                         hash_valid <= 1'b0;
                         schedule_counter <= 7'b0;
                         round_counter <= 7'b0;
-                        //req_word <= 1'b0;
                         kSel <= 6'b0;
                         extend_phase <= 3'b0;
                         hash_out <= 256'b0;
                         hash_saved <= 1'b0; 
+                        delay_save <= 1'b0;
                     end
                 end
                 
                 LOAD_SCHEDULE: begin
                     if (schedule_counter < 16) begin    
                         //req_word <= 1'b1;
-                        if (word_valid) begin
+                        delay_save <= 1'b1;
+                        if (word_valid && delay_save) begin
                             // Only increment counter when valid data arrives
                             schedule_counter <= schedule_counter + 1;
                         end
@@ -192,6 +194,7 @@ module compression_loop_parity (
                 end
                 
                 EXTEND_SCHEDULE: begin
+                    delay_save <= 1'b0; // Reset delay save flag
                     extend_phase <= extend_phase + 1;
                     case (extend_phase)
                         0: begin
@@ -306,12 +309,9 @@ module compression_loop_parity (
         read_addr1_o = 5'bz;
         read_addr2_o = 5'bz;
 
-        word_address = 4'bz;
         if (state == LOAD_SCHEDULE) begin
-            word_address = schedule_counter[3:0];   // schedule_counter[4:0] for first 16 words
-
             // Check paritiy of last bit of schedule_counter to determine which memory to write to
-            if (word_valid) begin
+            if (word_valid && delay_save) begin
                 if (schedule_counter[0] == 1'b0) begin
                     enable_write_e = 1'b1;
                     write_data_e = word_data;

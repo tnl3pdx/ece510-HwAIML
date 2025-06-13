@@ -10,7 +10,7 @@ module message_controller (
     input  logic        data_valid,     // Indicates valid data for data_in
     input  logic        end_of_file,    // Indicates end of input data
     input  logic        busy,           // Incoming busy signal from compression loop
-    input  logic [7:0]  word_address,   // Address from compression loop to read data
+    input  logic [3:0]  word_address,   // Address from compression loop to read data
     input  logic        req_word,       // Request signal from compression loop
     input  logic        cont,           // Continue signal from top module
     input  logic        enable,         // Enable signal for message controller
@@ -51,6 +51,7 @@ module message_controller (
     logic [7:0] read_addr;         // Read address for memory buffer
     logic [31:0] read_data;        // Read data from memory buffer
     logic enable_write;         // Enable write signal for memory buffer
+    logic delay_out;
 
     msg_ram memory_buffer (
         .clk(clk),
@@ -73,6 +74,7 @@ module message_controller (
             num_blocks <= 4'b0;
             done <= 1'b0;
             block_section <= 4'b0;
+            word_valid <= 1'b0;
         end else begin
             state <= next_state;
             
@@ -87,6 +89,7 @@ module message_controller (
                     num_blocks <= 4'b0;
                     done <= 1'b0;
                     block_section <= 4'b0;
+                    word_valid <= 1'b0;
                 end
                 
                 // RECEIVE state: receive data per clock cycle (8-bits per clock)
@@ -133,10 +136,18 @@ module message_controller (
                 end
                 
                 PROVIDE_DATA: begin
+                    word_valid <= 1'b0;
+                    delay_out <= 1'b0;
                     if (req_word) begin
                         // Read data from memory buffer
-                        block_section <= (block_section <= 4'b1111) ? block_section + 1 : block_section;
+                        if (delay_out) begin
+                            block_section <= (block_section <= 4'b1111) ? block_section + 1 : block_section;
+                        end
+                        delay_out <= 1'b1;
+                        word_valid <= req_word;
                     end 
+                    
+
                 end
             endcase
         end
@@ -149,6 +160,8 @@ module message_controller (
         // Default assignments
         enable_write = 1'b0;
         write_data = 8'bz;
+        word_data = 32'bz;
+        read_addr = 8'bz;
         case (state)
             RECEIVE: begin
                 // Write data to memory buffer
@@ -172,9 +185,10 @@ module message_controller (
                     write_data = 8'h00;
             end
             PROVIDE_DATA: begin
-                word_valid = req_word;
-                read_addr = word_address;
-                word_data = (word_valid) ? read_data : 32'hz;
+                read_addr = {word_address[3:0], block_section};
+                if (word_valid) begin
+                    word_data = read_data;
+                end 
             end
 
         endcase

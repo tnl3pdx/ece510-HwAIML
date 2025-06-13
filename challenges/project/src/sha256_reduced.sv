@@ -33,14 +33,13 @@ module sha256_reduced
     logic [31:0]    word_data;         // Data for word access
     logic           word_valid;        // Indicates if word from message controller is valid
 
-    logic [7:0]     word_address;      // Address for word access
+    logic [3:0]     word_address;      // Address for word access
     logic           req_word;          // Request signal from compression loop
 
     // Parallel control signals
 
     logic [num_loops-1:0]   cl_start;               // Start signal
     logic [num_loops-1:0]   cl_compression_busy;                // Busy signal  
-    logic [3:0][num_loops]             cl_word_address;        // Address signal
     logic                   cl_req_word [num_loops];            // Request signal   
     logic                   cl_load_done [num_loops];            // Load done signal for each loop
 
@@ -90,7 +89,6 @@ module sha256_reduced
                 .word_valid(word_valid),
 
                 .busy(cl_compression_busy[i]),
-                .word_address(cl_word_address[i]),
                 .req_word(cl_req_word[i]),
                 .load_done(cl_load_done[i]),
 
@@ -238,25 +236,22 @@ module sha256_reduced
 
     // Connect compression loop control signals
     always_comb begin
+        word_address = cl_block_count;
         case (cl_select)
             4'b0001: begin
-                word_address = {cl_block_count, cl_word_address[0]};
                 req_word = cl_req_word[0];
             end
             4'b0010: begin
-                word_address = {cl_block_count, cl_word_address[1]};
                 req_word = cl_req_word[1];
             end
             4'b0100: begin
-                word_address = {cl_block_count, cl_word_address[2]};
                 req_word = cl_req_word[2];
             end
             4'b1000: begin
-                word_address = {cl_block_count, cl_word_address[3]};
                 req_word = cl_req_word[3];
             end
             default: begin
-                word_address = 8'bz; // Default case
+                word_address = 4'bz; // Default case
                 req_word = 1'bz; // No request
             end
         endcase
