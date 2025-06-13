@@ -54,31 +54,41 @@ In this repository, the following LLMs were used to assist in the creation of co
 - Anthropic's Claude Models (3.5 Sonnet/3.7 Sonnet/3.7 Sonnet Thinking)
 - OpenAI's ChatGPT Models (4o/4.1)
 
+## Simulators
+
+QuestaSim was used for the simulation and testing of the project. This does require a license, but there are open-source simulators that are available to use, such as [Icarus Verilog](https://steveicarus.github.io/iverilog/).
+
+## ASIC Synthesis
+
+OpenLane 2 was used for the synthesis of the design. They have tutorials for installation in their wiki: [Link](https://openlane2.readthedocs.io/en/latest/index.html). When installing the OpenLane repository to your machine, it is recommended to install it into the home directory, as many of the scripts reference the files at this location.
+
 ## Sources
 
 Sources that were used in some challenges are mentioned here:
 
 ### Challenge 9
 
-**RL-PCB**
+**RL-PCB**: [Link](https://github.com/LukeVassallo/RL_PCB)
 
-**Car Racing**
+**Car Racing**: [Link](https://github.com/Farama-Foundation/Gymnasium) / [Wiki](https://gymnasium.farama.org/environments/box2d/car_racing/)
 
-**SPHINCS+**
+**SPHINCS+**: [Link](https://github.com/tottifi/sphincs-python)
 
 ### Challenge 12
 
-**MyHDL**
+**MyHDL**: [Link](https://github.com/myhdl/myhdl)
 
-**PyRTL**
+**PyRTL**: [Link](https://github.com/UCSBarchlab/PyRTL)
 
 ### Challenge 15
-
-**SHA256**
 
 [SHA256 Visualizer](https://sha256algorithm.com/)
 
 [How Does SHA-256 Work? Youtube Video](https://www.youtube.com/watch?v=f9EbD6iY9zI)
+
+### Challenge 18/21
+
+**OpenLane 2**
 
 
 
