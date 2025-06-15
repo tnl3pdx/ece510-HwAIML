@@ -19,6 +19,16 @@ To start the Python environment, type the following:
 
     source start.sh
 
+
+Move the SPI_Controller, SPI_Periphery, and SPI SV files out one directory into the src_sv folder, and replace the parameters in the SPI.sv file with the ones in the sv_parameters.sv file.
+
+![image](https://github.com/user-attachments/assets/1e9130a1-d29f-4ac5-8818-c5359e18ca65)
+
+![image](https://github.com/user-attachments/assets/fb898cdc-df64-4f4f-bfe1-fb12946e4297)
+
+![image](https://github.com/user-attachments/assets/c82f4a96-fe34-45cd-89e1-0bcc4369a737)
+
+
 To start the cocotb tests, type the following commands:
 
     ./run_test.py --test functional
