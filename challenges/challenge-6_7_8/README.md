@@ -25,6 +25,7 @@ In Challenge 8, the goal is to develop a multi-layer feed-forward perceptron net
     1. Implement a multi-layer feed-forward perceptron network. The network should have two input neurons, two hidden neurons, and one output neuron.   (DONE)
     2. Implement the backpropagation algorithm to train your network to solve the XOR logical function.     (DONE)
 
+<!---
 # Summary for Challenge 6/7/8
 
 In this challenge, I was able to produce a working sigmoid neuron model in Python that can be instantiated for a single neuron, or with multiple layers of neurons. The two functions that were learned by the neurons was a NAND and a XOR function.
@@ -54,8 +55,8 @@ With this basis in mind, I continued to Challenge 6
 ## C7: Visualize Neuron's Line and Weights
 
 ## C8: Multi-layer Feed-Forward Neural Network
-
-
+)
+--->
 
 
 

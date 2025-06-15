@@ -89,7 +89,11 @@ Sources that were used in some challenges are mentioned here:
 
 ### Challenge 18/21
 
-**OpenLane 2**
+**OpenLane 2**: [Link](https://github.com/efabless/openlane2)
+
+## Challenge 25/27
+
+**cocotb**: [Link](https://github.com/cocotb/cocotb)
 
 
 
