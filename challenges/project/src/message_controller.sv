@@ -200,6 +200,7 @@ module message_controller (
         case (state)
             IDLE: begin
                 if (data_valid && enable) next_state = RECEIVE;
+                if (end_of_file) next_state = PADDING;
             end
             RECEIVE: begin
                 if (end_of_file) next_state = PADDING;

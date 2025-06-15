@@ -70,6 +70,7 @@ module tb_sha256();
         
         // Feed each character of the message
         data_valid = 1;
+
         while (message_index < test_message.len()) begin
             @(posedge clk);
             data_in = test_message[message_index];
@@ -79,6 +80,7 @@ module tb_sha256();
             // Display bytes being sent
             //$display("Sending byte: 0x%h ('%s')(#'%d')", data_in, string'(data_in), printIndex);
         end
+
         
         // Signal end of message
         end_of_file = 1;
@@ -225,11 +227,16 @@ module tb_sha256();
         expected_hash = 256'hd48a052ba90eb30789b185a184cb53401d7bdb007a5e4b449be7565f5cfe86ba;
         
         
-*/
+
 
         // 608-byte message
         test_message = "h0b[t-S*Hjx)]8ax8GeN&4A*_54hAN[t3Nn3un2&kq0ej*enpr#j@Q,&NkP?wg9x+GHeDSf}[mBQw651vN9;*M&az9X_N@%p9)]&+?.HQTQb[06=p9NY@_]TiH2eFQ#%ZvmS4SE.SHSn2j%:r98,yJ0%;Q&cyv9{$8p3@xJvGLJgVFeJ3m//[/5R[;FT}X!Sg#JthBCnj$=XTapEL&(=SR8zQGwB2wvca/8Y)r)*+rH=q=[Zp*aw9ux,!SghzrSCX-5N{TZ}/.]NDax[;hD1rZ*vyvE?w(m-}TD,(pDf,;T1Zi%kR!mvuELzty)F2z,55,U$NKpXW$g/F@X;,r!a$(H(;GefAC([TPGR}E8$P@c84h/uG&8cSW(egVg[hLi*NrBraBb!CB#g5A##anB_#Pf2U4WTvb8k[d4j,=4;NC-xJz$UCRVZJiDd7!Hi&{GzV{&Nzp$3ef8ukG6u==z$mWDw7ymA0Ceay;ZgxX%2vVabbNHw%iXc93_a3,[X-/3@6i9_2y:DbpvjKnxt(eCEiRcKnF4i:Y6*X!7#X?_Mh{x_T5hdnz!:}cek!d=kqfv5Cd:n%z&ZpfEu)iXLKJh;eiuA80emrDQj";
         expected_hash = 256'h0fc26ea3d1800b463b4b599bb0e8ac46fa91fc16c3cf9bf3cba32ca7927ab8dd;
+*/
+	test_message = "";
+	expected_hash = 256'he3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855;
+
+
         testSequence(test_message, expected_hash);
 
         reset();
