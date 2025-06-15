@@ -6,9 +6,9 @@ TOPLEVEL = SPI
 MODULE ?= hwsw_tb
 
 # Path to source files
-VERILOG_SOURCES = $(PWD)/src_sv/SPI/SPI.sv \
-                  $(PWD)/src_sv/SPI/SPI_Controller.sv \
-                  $(PWD)/src_sv/SPI/SPI_Periphery.sv
+VERILOG_SOURCES = $(PWD)/src_sv/SPI.sv \
+                  $(PWD)/src_sv/SPI_Controller.sv \
+                  $(PWD)/src_sv/SPI_Periphery.sv
 
 # Set simulator specific options (optional)
 SIM ?= icarus
