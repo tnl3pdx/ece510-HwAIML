@@ -14,12 +14,13 @@ Attempted Challenges (as of 6/4/2025):
 - Challenge 6  (Finish Summary)
 - Challenge 7  (Finish Summary)
 - Challenge 8  (Finish Summary)
-- Challenge 9  (Needs Cleanup) (Finish Summary)
-- Challenge 12 (Needs Cleanup) (Finish Summary)
-- Challenge 15 (Needs Cleanup) (Finish Summary)
-- Challenge 18 (Needs Cleanup) (Finish Summary) 
-- Challenge 21 (WIP)
-- Challenge 25 (WIP)
+- Challenge 9  
+- Challenge 12 
+- Challenge 15 
+- Challenge 18 
+- Challenge 21 
+- Challenge 25
+- Challenge 27
 
 Log Book Link: [Google Drive](https://drive.google.com/drive/folders/14qTbDQHp6gnZEJzkRY6MXAn2CLWChqG-?usp=sharing)
 
