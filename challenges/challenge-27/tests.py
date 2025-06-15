@@ -23,42 +23,7 @@ import time
 '''
 
 CLK_PERIOD = 15  # Clock period in nanoseconds
-
-class DebugMonitor:
-    def __init__(self, dut, signals_to_monitor):
-        self.dut = dut
-        self.signals = signals_to_monitor
-        self.trace_data = {sig: [] for sig in signals_to_monitor}
-        self.time_stamps = []
-        
-    async def monitor(self, duration):
-        """Capture signal values for visualization"""
-        for _ in range(duration):
-            await RisingEdge(self.dut.clk)
-            
-            self.time_stamps.append(get_sim_time('ns'))
-            for sig in self.signals:
-                self.trace_data[sig].append(
-                    getattr(self.dut, sig).value.integer
-                )
-                
-    def plot_waveforms(self):
-        """Generate waveform plots"""
-        fig, axes = plt.subplots(len(self.signals), 1, 
-                                 figsize=(10, 2*len(self.signals)))
-        
-        if len(self.signals) == 1:
-            axes = [axes]
-            
-        for ax, sig in zip(axes, self.signals):
-            ax.step(self.time_stamps, self.trace_data[sig], where='post')
-            ax.set_ylabel(sig)
-            ax.grid(True)
-            
-        axes[-1].set_xlabel('Time (ns)')
-        plt.tight_layout()
-        plt.savefig('waveforms.png')
-        
+     
 
 class PerformanceBenchmark:
     def __init__(self, sha256):
@@ -329,18 +294,3 @@ async def performance_test(dut):
         dut._log.info(f"Simulation Speed: {results['sim_speed']:.2f} ns/sec")
         dut._log.info(f"Max Latency: {results['max_latency']:.2f} ns")
         dut._log.info(f"Min Latency: {results['min_latency']:.2f} ns")
-
-@cocotb.test()
-async def debug_test(dut):
-    """Test with debug monitoring"""
-    monitor = DebugMonitor(dut, ['clk', 'rst_n', 'enable', 'data_in', 'data_valid', 'end_of_file', 'ready', 'hash_out', 'hash_valid'])
-    
-    # Start monitoring
-    cocotb.start_soon(monitor.monitor(10000))
-    
-    # Run test scenario
-    await functional_test(dut)
-    
-    # Generate debug outputs
-    monitor.plot_waveforms()
-    monitor.export_vcd()
