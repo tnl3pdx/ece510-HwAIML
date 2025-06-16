@@ -14,7 +14,7 @@
 my_profiles
 runs/
 temp/
-
+keys/
 # HDL files
 *.do
 work
@@ -26,3 +26,4 @@ work
 wlft*
 converted/
 tmpsrc/
+
