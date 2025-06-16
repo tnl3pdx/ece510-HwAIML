@@ -1,9 +1,9 @@
 
-# ece510-HwAIML
+# ece510-HwAIML - SPHINCS+: SHA-256 Chip Accelerator Project
 
 The repository contains challenge solutions for ECE 510 - Hardware In AI and ML. Each week, 1 challenge is attempted to see if a solution can be found using LLMs.
 
-## Navigation
+## Navigation to Documentation
 
 A page in the wiki is provided to assist with navigation of this repository: [Link](https://github.com/tnl3pdx/ece510-HwAIML/wiki)
 
@@ -11,9 +11,9 @@ A page in the wiki is provided to assist with navigation of this repository: [Li
 
 Attempted Challenges (as of 6/4/2025):
 - Challenge 5
-- Challenge 6  (Finish Summary)
-- Challenge 7  (Finish Summary)
-- Challenge 8  (Finish Summary)
+- Challenge 6
+- Challenge 7
+- Challenge 8
 - Challenge 9  
 - Challenge 12 
 - Challenge 15 
