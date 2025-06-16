@@ -25,6 +25,16 @@ In Challenge 8, the goal is to develop a multi-layer feed-forward perceptron net
     1. Implement a multi-layer feed-forward perceptron network. The network should have two input neurons, two hidden neurons, and one output neuron.   (DONE)
     2. Implement the backpropagation algorithm to train your network to solve the XOR logical function.     (DONE)
 
+# Usage
+
+To start the Python Environment, use the following command:
+
+        source start.sh
+
+To start the script, use the following command:
+
+        python3 sigNeuron.py
+
 <!---
 # Summary for Challenge 6/7/8
 
